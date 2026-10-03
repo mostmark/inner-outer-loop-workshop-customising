@@ -132,7 +132,7 @@ every terminal you use:
 [source,bash]
 ----
 export GITHUB_ORG=<your GitHub user or organisation>
-export QUAY_USER=<your quay.io user or organisation>   # from tutorial 4 on
+export QUAY_USER=<your quay.io user or organisation>   # where your lab guide image goes
 export WORKDIR=~/acme-workshop                          # where your forks are cloned
 ----
 

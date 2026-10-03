@@ -3,3 +3,7 @@
 .Before you start
 * xref:how-the-workshop-is-built.adoc[How the workshop is built]
 * xref:own-git-server-and-registry.adoc[Using your own Git server and registry]
+
+.Tutorials
+* xref:01-fork-and-preview.adoc[1. Fork and preview the lab guide]
+* xref:02-branding.adoc[2. Change the branding]

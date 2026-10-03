@@ -94,4 +94,4 @@ for pushing, and permission for the workshop's projects to pull. These tutorials
 outside the cluster.
 ====
 
-Next: the first tutorial, *Fork and preview the lab guide* (in preparation).
+Next: xref:01-fork-and-preview.adoc[Tutorial 1: Fork and preview the lab guide].

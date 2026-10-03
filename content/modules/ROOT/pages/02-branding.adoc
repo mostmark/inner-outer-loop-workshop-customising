@@ -1,0 +1,275 @@
+= Tutorial 2: Change the branding
+include::partial$_attributes.adoc[]
+
+ACME wants participants to recognise its workshop at first sight: its own logo, colours and
+title, and its own icon in the browser tab.
+
+[cols="1,3"]
+|===
+| Goal | The lab guide with ACME's logo, colours, title, footer and browser icon
+| You need | xref:01-fork-and-preview.adoc[Tutorial 1] completed; the local preview
+| Time | about 20 minutes
+|===
+
+== How the look of the lab guide works
+
+The lab guide is an https://antora.org[Antora^] site. Its look comes from a *UI bundle*, a theme
+that `site.yml` downloads (`ui.bundle.url`). You don't change the theme itself. Instead,
+`site.yml` lists *supplemental files*: each one replaces a file of the theme (`path`) with a file
+from your repository (`contents`), or adds a new one.
+
+[cols="2,3"]
+|===
+| File of the theme (`path`) | Contains
+
+| `partials/header-content.hbs` | the header bar: logo, title, the *Links* menu
+| `partials/footer-content.hbs` | the footer
+| `partials/head-meta.hbs` | links in the HTML head: style sheets, browser icon
+| `css/...`, `img/...` | style sheets and images; new files are added
+|===
+
+You will put all ACME files in a new folder, `content/branding/`, and list each one in
+`site.yml`.
+
+[IMPORTANT]
+====
+The lab guide repository already has a folder `content/supplemental-ui/`, but its files are not
+active: `site.yml` lists that folder without `contents`, and Antora ignores such entries. Only
+`partials/head-scripts.hbs` is listed with `contents` and active. Leave the folder as it is.
+====
+
+Do all steps in your fork of the lab guide:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GUIDE_REPO}"
+mkdir -p content/branding/img content/branding/css content/branding/partials
+----
+
+== Step 1: Add the logo and the browser icon
+
+Use your own logo as SVG or PNG. For the tutorial, create a simple ACME logo (white text for the
+dark header bar) and an icon:
+
+[source,bash]
+----
+cat > content/branding/img/acme-logo.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40" width="150" height="40">
+  <polygon points="4,34 20,6 36,34" fill="#f28c28"/>
+  <polygon points="14,34 20,23 26,34" fill="#0b2e59"/>
+  <text x="44" y="29" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff">ACME</text>
+</svg>
+EOF
+cat > content/branding/img/acme-favicon.svg <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0b2e59"/>
+  <polygon points="5,27 16,6 27,27" fill="#f28c28"/>
+</svg>
+EOF
+----
+
+== Step 2: Add the colours
+
+The theme draws the header bar in `#191919` and links in red (`#e00`). A small style sheet
+overrides them:
+
+[source,bash]
+----
+cat > content/branding/css/acme.css <<'EOF'
+/* ACME colours, applied on top of the theme. */
+.navbar {
+  background: #0b2e59;                  /* header bar */
+}
+.doc a,
+.doc a:hover {
+  color: #c25e00;                       /* links in the pages */
+}
+.nav-item.is-current-page > .nav-link {
+  color: #0b2e59;                       /* current page in the navigation */
+  font-weight: bold;
+}
+EOF
+----
+
+To find other elements, open the preview, right-click an element and choose *Inspect*: the
+browser shows its CSS classes and the theme's rules.
+
+== Step 3: Replace the header, the footer and the HTML head
+
+The header shows the ACME logo, links it to ACME's website, and keeps the theme's *Links* menu:
+
+[source,bash]
+----
+cat > content/branding/partials/header-content.hbs <<'EOF'
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.example.com" target="_blank" style="margin-left: 2.5%;">
+        <img src="{{{uiRootPath}}}/img/acme-logo.svg" alt="ACME" style="height: 2.2rem;">
+      </a>
+      <a class="navbar-item site-title" style="color: #fff !important;" href="{{{or site.url (or siteRootUrl siteRootPath)}}}">{{site.title}}</a>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        {{#if page.attributes.links}}
+        <div class="navbar-item navbar-item-right-dropdown has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Links</a>
+          <div class="navbar-dropdown navbar-dropdown-right">
+            {{#each page.attributes.links}}
+            <a class="navbar-item navbar-item-right-content" href="{{this.url}}" target="_blank">{{this.text}}</a>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    </div>
+  </nav>
+</header>
+EOF
+cat > content/branding/partials/footer-content.hbs <<'EOF'
+<footer class="footer">
+  <p>ACME Developer Workshop &middot; based on the Inner &amp; Outer Loop Workshop</p>
+</footer>
+EOF
+cat > content/branding/partials/head-meta.hbs <<'EOF'
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{{{uiRootPath}}}/css/acme.css">
+<link rel="icon" href="{{{uiRootPath}}}/img/acme-favicon.svg" type="image/svg+xml">
+EOF
+----
+
+The files are https://handlebarsjs.com[Handlebars^] templates: `+{{{uiRootPath}}}+` is the path
+to the theme's files, `+{{site.title}}+` the title from `site.yml`. `head-meta.hbs` keeps the
+Font Awesome icons that the theme's version loads, and adds the ACME style sheet and icon.
+
+== Step 4: Register the files and change the title
+
+In `site.yml`, add one entry per file to `ui.supplemental_files`, before the entry
+`- path: .nojekyll`:
+
+[source,yaml]
+----
+    # ACME branding: each entry replaces a file of the theme (path) with a file of this repository (contents).
+    - path: partials/header-content.hbs
+      contents: ./content/branding/partials/header-content.hbs
+    - path: partials/footer-content.hbs
+      contents: ./content/branding/partials/footer-content.hbs
+    - path: partials/head-meta.hbs
+      contents: ./content/branding/partials/head-meta.hbs
+    - path: css/acme.css
+      contents: ./content/branding/css/acme.css
+    - path: img/acme-logo.svg
+      contents: ./content/branding/img/acme-logo.svg
+    - path: img/acme-favicon.svg
+      contents: ./content/branding/img/acme-favicon.svg
+----
+
+Change the titles: in `site.yml` the site title (header bar and browser tab), in
+`content/antora.yml` the component title (navigation and breadcrumbs):
+
+[source,yaml]
+----
+# site.yml
+site:
+  title: ACME Developer Workshop
+----
+
+[source,yaml]
+----
+# content/antora.yml
+title: ACME Developer Workshop
+----
+
+The *Links* menu in the header comes from `page-links` at the end of `content/antora.yml`. Replace
+the entry with ACME's:
+
+[source,yaml]
+----
+    page-links:
+    - url: https://www.example.com
+      text: ACME Intranet
+----
+
+== Step 5: Preview
+
+[tabs]
+====
+Podman::
++
+--
+The viewer rebuilds when a `.yml` file changes, so it already picked up your edit of `site.yml`.
+If you change a `.hbs`, `.css` or image file later, save `site.yml` again or restart the viewer.
+--
+Node.js::
++
+--
+Run `./build-site.sh` again and reload the browser.
+--
+====
+
+Open the preview with the example URL from xref:01-fork-and-preview.adoc[tutorial 1].
+
+// SCREENSHOT-TODO: 02-01-header-before-after.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `02-01-header-before-after.png` +
+Two header bars one above the other: the original (Red Hat Demo Platform logo, dark grey bar,
+"Inner & Outer Loop Workshop") and ACME's (ACME logo, blue bar, "ACME Developer Workshop"),
+each with the top of the page "2. Get your Developer Workspace" below, so the orange links and
+the highlighted current page are visible.
+====
+
+=== Check
+
+* The header bar is blue, with the ACME logo and the title "ACME Developer Workshop".
+* Links in the pages are orange; the current page in the navigation is blue and bold.
+* The browser tab shows the ACME icon and "... :: ACME Developer Workshop".
+* The footer reads "ACME Developer Workshop · based on the Inner & Outer Loop Workshop".
+* The *Links* menu contains "ACME Intranet".
+
+// SCREENSHOT-TODO: 02-02-browser-tab.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `02-02-browser-tab.png` +
+The browser tab of the preview: ACME icon and the title ending in "ACME Developer Workshop".
+====
+
+== Step 6: Commit and push
+
+[source,bash]
+----
+git add content/branding site.yml content/antora.yml
+git commit -m "ACME branding: logo, colours, title, footer, browser icon"
+git push
+----
+
+The lab guide on a cluster changes only when you build a new image from your fork, in tutorial 4.
+
+== What you changed
+
+[cols="2,3"]
+|===
+| File | Change
+
+| `content/branding/` (new) | logo, browser icon, style sheet, header, footer and HTML head
+| `site.yml` | site title; six supplemental files
+| `content/antora.yml` | component title; the *Links* menu
+|===
+
+== Troubleshooting
+
+[cols="2,3"]
+|===
+| Problem | Solution
+
+| Nothing changed in the preview | Podman: save `site.yml` again or restart the viewer. Node.js:
+run `./build-site.sh` again. Then reload the browser without cache (kbd:[Shift] + reload).
+| The build stops with `Failed to read ui.supplemental_files entry` | A `contents` path in
+`site.yml` doesn't match a file. The paths start with `./content/branding/`; run Antora with
+`--stacktrace` to see which one.
+| The logo is missing, the rest works | The `path` of the logo in `site.yml` must be
+`img/acme-logo.svg`, the same as in the `src` of `header-content.hbs`.
+| The old browser icon still shows | Browsers cache icons; open the preview in a private window.
+|===
+
+Next: tutorial 3, *Add a chapter* (in preparation).

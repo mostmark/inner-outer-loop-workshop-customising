@@ -24,3 +24,7 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 | File | Page | Shows |
 |---|---|---|
 | `00a-01-participant-view.png` | Introduction | lab guide next to the Dev Spaces workspace, as `user1` |
+| `01-01-github-fork.png` | Tutorial 1 | GitHub's "Create a new fork" page for the lab guide repository |
+| `01-02-local-preview.png` | Tutorial 1 | the lab guide's start page in the local preview |
+| `02-01-header-before-after.png` | Tutorial 2 | original and ACME header bars, one above the other |
+| `02-02-browser-tab.png` | Tutorial 2 | browser tab with the ACME icon and title |

@@ -162,4 +162,4 @@ Most customisations are easiest to test on a fresh installation: run `cleanup.sh
 `bootstrap.sh` again.
 
 Next: xref:own-git-server-and-registry.adoc[Using your own Git server and registry], or go
-straight to the first tutorial if you use GitHub and quay.io.
+straight to xref:01-fork-and-preview.adoc[tutorial 1] if you use GitHub and quay.io.
