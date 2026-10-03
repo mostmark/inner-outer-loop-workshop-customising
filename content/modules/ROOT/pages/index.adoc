@@ -1,0 +1,149 @@
+= Customising the Inner & Outer Loop Workshop
+include::partial$_attributes.adoc[]
+
+The *Inner & Outer Loop Workshop* is a hands-on workshop for developers on Red Hat OpenShift. Any
+organisation can run it on its own OpenShift cluster, and adapt it to its own needs: its own look,
+its own chapters, its own code and additional operators.
+
+These tutorials show you how. You work through a complete example: the fictional company *ACME*
+turns the workshop into its own version, step by step.
+
+The site is written for two groups:
+
+* *Content authors*, who change the lab guide: the look, the text, new chapters.
+* *Platform teams*, who install the workshop and change what runs on the cluster: operators,
+  shared services, per-participant resources.
+
+Content authors need tutorials 1 to 3, which run entirely on your own computer. Platform teams
+need all six.
+
+== The approach: fork and change
+
+The workshop consists of three Git repositories (see
+xref:how-the-workshop-is-built.adoc[How the workshop is built]). To customise it, you copy
+(fork) all three into your own GitHub account or organisation and change your copies. The
+original repositories stay untouched, and you can still take over improvements from them later.
+
+[TIP]
+====
+Where you can, put your changes in new files (a new page, a new template) instead of editing
+existing ones. That keeps it easy to merge later updates of the original workshop into your
+fork.
+====
+
+== The workshop at a glance
+
+Participants need only a web browser. Everything else runs on OpenShift.
+
+[cols="1,3"]
+|===
+| Part | Modules
+
+| *Part 1: Inner Loop*
+| Developer workspace in OpenShift Dev Spaces; Inventory service with Quarkus; Catalog service
+with Spring Boot; Gateway service with .NET; Web UI with Node.js; application health; externalized
+configuration
+
+| *Part 2: Outer Loop*
+| Continuous integration with OpenShift Pipelines; GitOps with Argo CD; continuous delivery;
+OpenShift Service Mesh and Kiali
+|===
+
+The two parts can run as one event or on two days. Each participant gets:
+
+* a *lab guide* with their own user name, password and links filled in;
+* a *workspace* in OpenShift Dev Spaces (VS Code in the browser) with the example code and all
+  tools;
+* their own *projects* on the cluster: `my-project-<user>` for Part 1 and `cn-project-<user>` for
+  Part 2;
+* accounts in the shared *Gitea* (Git server) and *Argo CD* instances, and access to *Kiali*.
+
+// SCREENSHOT-TODO: 00a-01-participant-view.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `00a-01-participant-view.png` +
+What a participant sees, as `user1`: the lab guide (left half) next to the Dev Spaces workspace
+with the VS Code editor and the `workshop` folder open (right half). Use a full-HD browser
+window, light theme.
+====
+
+The workshop is built for OpenShift {ocp_version} with OpenShift Dev Spaces {devspaces_version},
+OpenShift Pipelines {pipelines_version}, OpenShift GitOps {gitops_version} and OpenShift Service
+Mesh {ossm_version}.
+
+== About these tutorials
+
+=== The storyline
+
+ACME wants to run the workshop for its developers with its own look and an extra chapter about
+building container images with Shipwright. Across the tutorials you:
+
+[cols="1,4,1,1"]
+|===
+| # | Tutorial | Cluster needed | Time (about)
+
+| 1 | Fork and preview the lab guide | no | 20 min
+| 2 | Change the branding: logo, colours, title | no | 20 min
+| 3 | Add a chapter "Build a container image with Shipwright" | no | 30 min
+| 4 | Install the workshop from your forks | yes | 45 min
+| 5 | Add Builds for Red Hat OpenShift, with a project per participant | yes | 45 min
+| 6 | Add the code for the new chapter's exercise | yes | 30 min
+|===
+
+The tutorials build on each other: do them in this order. At the end, ACME has a working
+workshop with its own branding, a new chapter, the operator that chapter needs, and the matching
+exercise code.
+
+The tutorials are being written; the navigation shows the ones that are available.
+
+=== Two kinds of users
+
+These tutorials use two terms consistently:
+
+* *You* are the person customising the workshop: a platform engineer or content author.
+* A *participant* is someone attending the (ACME) workshop.
+
+=== What you need
+
+For all tutorials:
+
+* A GitHub account or organisation for your forks.
+* `git` on your computer.
+* Either `podman` or Node.js 20 or later, to build and preview the lab guide.
+
+Additionally, for tutorials 4 to 6:
+
+* An OpenShift {ocp_version} cluster (x86_64) where you are cluster-admin, with a default storage
+  class, the internal image registry, and the participants' users in its identity provider. The
+  workshop's README lists the details under
+  {GITOPS_REPO_URL}#prerequisites[Prerequisites^].
+* An account at a container registry the cluster can pull from, for example a public repository
+  on quay.io.
+* `oc` and, to check chart changes, `helm`.
+
+TIP: Don't use a cluster that other people work on: the installation makes cluster-wide changes,
+which the workshop's README lists under {GITOPS_REPO_URL}#cluster-wide-changes[Cluster-Wide Changes^].
+
+=== Your values
+
+Commands in these tutorials use shell variables for the values that are yours. Set them once in
+every terminal you use:
+
+[source,bash]
+----
+export GITHUB_ORG=<your GitHub user or organisation>
+export QUAY_USER=<your quay.io user or organisation>   # from tutorial 4 on
+export WORKDIR=~/acme-workshop                          # where your forks are cloned
+----
+
+== Where to find more
+
+* The workshop's installation and operation:
+  {GITOPS_REPO_URL}#readme[README of the gitops repository^]
+* Known issues and their workarounds:
+  {GITOPS_REPO_URL}/blob/main/docs/known-issues.md[docs/known-issues.md^]
+* Why things are built the way they are:
+  {GITOPS_REPO_URL}/blob/main/docs/decisions.md[docs/decisions.md^]
+* Writing lab guide content: {GUIDE_REPO_URL}#readme[README of the lab guide repository^]
+
+Next: xref:how-the-workshop-is-built.adoc[How the workshop is built].

@@ -1,0 +1,5 @@
+* xref:index.adoc[Introduction]
+
+.Before you start
+* xref:how-the-workshop-is-built.adoc[How the workshop is built]
+* xref:own-git-server-and-registry.adoc[Using your own Git server and registry]

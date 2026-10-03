@@ -1,0 +1,97 @@
+= Using your own Git server and registry
+include::partial$_attributes.adoc[]
+
+The tutorials use GitHub for your forks and quay.io for your images. You can use another Git
+server (for example GitLab, Gitea or GitHub Enterprise) and another container registry instead.
+This page lists what changes. If you use GitHub and quay.io, you can skip it.
+
+[IMPORTANT]
+====
+The cluster must be able to *read* your repositories and images *without credentials*: the
+repositories and image repositories must be public, or at least readable without logging in from
+the cluster's network. Private repositories and registries are not supported yet.
+====
+
+== Who reads your repositories and images
+
+These components on the cluster fetch from your Git server and registry:
+
+[cols="2,2,3"]
+|===
+| Component | Reads | Configured in
+
+| Argo CD (`openshift-gitops`) | the gitops repository | `bootstrap.sh --repo`, and the
+repository URLs in the gitops repository (tutorial 1 lists them)
+| DevWorkspace operator | the code repository's `devfile.yaml`, as a raw file | `devspaces.devfileURL`
+in `charts/workshop-users/values.yaml`
+| Every participant's workspace | the code repository (clone) | `devspaces.repositoryURL` in
+`charts/workshop-users/values.yaml`
+| Job `maven-warmup` | the code repository (clone) | `nexus.warmup.repositoryURL` in
+`charts/workshop-platform/values.yaml`
+| Lab guide Deployment | the lab guide image | `labGuide.image` in
+`charts/lab-guide/values.yaml`
+| Every participant's workspace, Job `maven-warmup` | the tooling image, if you build your own |
+the code repository's `devfile.yaml`, `nexus.warmup.image` in
+`charts/workshop-platform/values.yaml`
+|===
+
+== Differences to GitHub
+
+[cols="1,2,2"]
+|===
+| What | GitHub | Your own Git server
+
+| Copying the repositories
+| the *Fork* button
+| create three empty repositories, then copy each one:
+
+`git clone --bare <original URL>` +
+`git -C <name>.git push --mirror <your URL>`
+
+Some servers can also import a repository by URL, for example GitLab's *Import project*.
+
+| Raw file URL of `devfile.yaml` (for `devspaces.devfileURL`)
+| `\https://raw.githubusercontent.com/<org>/<repo>/main/devfile.yaml`
+| depends on the server, for example:
+
+GitLab: `\https://<host>/<group>/<repo>/-/raw/main/devfile.yaml` +
+Gitea: `\https://<host>/<org>/<repo>/raw/branch/main/devfile.yaml`
+
+Open the URL in a private browser window: it must show the plain file without a login.
+
+| Preview of the lab guide on the web
+| the lab guide repository's GitHub Pages workflow (`.github/workflows/gh-pages.yml`)
+| not covered; preview locally (tutorial 1) or on the cluster
+|===
+
+The URL formats in the commands of the tutorials are GitHub's. Replace them with your server's
+where they appear.
+
+== Your own container registry
+
+The build scripts push to quay.io:
+
+* `build-push-container.sh` (lab guide repository) pushes
+  `quay.io/$QUAY_USER/inner-outer-loop-lab:latest`;
+* `tools/build-push.sh` (gitops repository) pushes `quay.io/$QUAY_USER/workshop-tools:latest`.
+
+To use another registry, change the `IMAGE=` line of the script in your fork, for example:
+
+[source,bash]
+----
+IMAGE="registry.example.com/acme/inner-outer-loop-lab:latest"
+----
+
+Log in with `podman login <registry>` before you run the script, and make the image repository
+readable without credentials. Then use the same image name in the chart values (see the table
+above).
+
+[NOTE]
+====
+The cluster's internal image registry can hold the images too, but it takes extra setup: a
+project of its own (not one the workshop creates, because `cleanup.sh` deletes those), a route
+for pushing, and permission for the workshop's projects to pull. These tutorials use a registry
+outside the cluster.
+====
+
+Next: the first tutorial, *Fork and preview the lab guide* (in preparation).

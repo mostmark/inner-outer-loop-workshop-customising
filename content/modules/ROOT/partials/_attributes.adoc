@@ -1,0 +1,16 @@
+// Shared attributes of the tutorial site. Every page includes this file right after its title:
+// include::partial$_attributes.adoc[]
+:experimental:
+:source-highlighter: highlightjs
+:icons: font
+// The original workshop repositories (what you fork).
+:GITHUB_UPSTREAM: mostmark
+:GITOPS_REPO: inner-outer-loop-workshop-gitops
+:GUIDE_REPO: inner-outer-loop-workshop
+:CODE_REPO: inner-outer-loop-workshop-code
+:GITOPS_REPO_URL: https://github.com/{GITHUB_UPSTREAM}/{GITOPS_REPO}
+:GUIDE_REPO_URL: https://github.com/{GITHUB_UPSTREAM}/{GUIDE_REPO}
+:CODE_REPO_URL: https://github.com/{GITHUB_UPSTREAM}/{CODE_REPO}
+// The images the original workshop publishes.
+:GUIDE_IMAGE: quay.io/mostmark/inner-outer-loop-lab:latest
+:TOOLS_IMAGE: quay.io/mostmark/workshop-tools:latest

@@ -1,0 +1,17 @@
+name: customising
+title: Customising the Workshop
+# Unversioned: the site follows the workshop's main branch, so URLs have no version segment.
+version: ~
+nav:
+  - modules/ROOT/nav.adoc
+
+asciidoc:
+  attributes:
+    page-pagination: true
+    experimental: true
+    # Versions the workshop is built for; keep them in step with the lab guide's antora.yml.
+    ocp_version: "4.22"
+    devspaces_version: "3.30"
+    pipelines_version: "1.24"
+    gitops_version: "1.21"
+    ossm_version: "3.4"

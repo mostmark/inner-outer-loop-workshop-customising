@@ -1,0 +1,27 @@
+site:
+  title: Customising the Inner & Outer Loop Workshop
+  url: https://mostmark.github.io/inner-outer-loop-workshop-customising
+  start_page: customising::index.adoc
+
+content:
+  sources:
+    - url: .
+      start_path: content
+
+ui:
+  bundle:
+    # The theme of the workshop's lab guide, so both sites look the same.
+    url: https://github.com/rhpds/rhdp_showroom_theme/releases/download/v0.0.1/ui-bundle.zip
+    snapshot: true
+  # A directory (not a list of entries), so every file in it is added to the theme.
+  supplemental_files: ./content/supplemental-ui
+
+runtime:
+  cache_dir: ./.cache/antora
+
+asciidoc:
+  extensions:
+    - ./content/lib/tab-block.js
+
+output:
+  dir: ./www

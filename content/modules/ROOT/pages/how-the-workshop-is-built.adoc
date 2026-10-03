@@ -1,0 +1,165 @@
+= How the workshop is built
+include::partial$_attributes.adoc[]
+
+Before you change anything, it helps to know which part lives where, how the installation works,
+and what connects the parts. This page gives the overview; the READMEs of the repositories have
+the details.
+
+== Three repositories
+
+[cols="1,2,2"]
+|===
+| Repository | Contains | Reaches the cluster as
+
+| {GITOPS_REPO_URL}[`{GITOPS_REPO}`^] +
+_the gitops repository_
+| Helm charts for everything on the cluster, `bootstrap.sh` and `cleanup.sh`, smoke tests,
+the source of the participants' tooling image (`tools/`), documentation (`docs/`)
+| Argo CD reads the charts from Git and installs them. The tooling image is built with
+`tools/build-push.sh` and pulled by every workspace.
+
+| {GUIDE_REPO_URL}[`{GUIDE_REPO}`^] +
+_the lab guide repository_
+| The lab guide as an Antora site: pages, navigation, images, theme additions, and the
+`Containerfile` of the lab guide image
+| A container image (`{GUIDE_IMAGE}`), built with `build-push-container.sh`. One Deployment
+serves it to all participants.
+
+| {CODE_REPO_URL}[`{CODE_REPO}`^] +
+_the code repository_
+| What participants work with: the services in `labs/`, the scripts behind the devfile commands
+in `.tasks/`, and `devfile.yaml`
+| Cloned (branch `main`) into every participant's workspace at `/projects/workshop`.
+|===
+
+[.diagram]
+image::00b-01-repositories.svg[How the three repositories reach the cluster]
+
+[IMPORTANT]
+====
+Participants see *everything* in the code repository, because it is cloned into their
+workspace. Never put installation notes, passwords or tokens there. Maintainer material belongs
+in the gitops repository.
+====
+
+All three repositories use only the branch `main`, and the images use the tag `latest`.
+
+== How the installation works
+
+The workshop is installed with OpenShift GitOps (Argo CD), as an *app of apps*. You run one
+script, and Argo CD does the rest:
+
+[.diagram]
+image::00b-02-installation.svg[Order of the installation]
+
+. `bootstrap.sh` installs OpenShift GitOps, gives its Argo CD instance (`openshift-gitops`) the
+  permissions it needs, creates the Secrets that must not be in Git (the participants'
+  passwords), and creates the *root Application*.
+. The root Application creates four *child Applications*, one per chart, in *waves*. Each wave
+  starts only when the previous one is synced and healthy:
++
+[cols="1,2,3"]
+|===
+| Wave | Application (chart) | Installs
+
+| 0 | `workshop-operators` | the operators (Dev Spaces, Pipelines, Service Mesh, Kiali, Gitea)
+| 0 | `workshop-lab-guide` | the lab guide
+| 1 | `workshop-platform` | the shared instances: Dev Spaces, Istio, Kiali, the participants'
+Argo CD, Gitea, the Nexus Maven mirror, database templates, user workload monitoring
+| 2 | `workshop-users` | everything per participant: projects, permissions, Argo CD project,
+workspace
+|===
+. Some steps cannot be plain resources, for example waiting until an operator is ready or
+  creating Gitea accounts. *Jobs* do them, as Argo CD *sync hooks*: they run every time their
+  Application syncs.
++
+[cols="1,1,3"]
+|===
+| Job | Application | Does
+
+| `wait-for-operators` | operators | waits until every operator is installed
+| `nexus-config`, `cluster-integration`, `hide-sample-templates` | platform | configure Nexus,
+the console plugins and the image stream for Java 21 builds, and hide OpenShift's sample database
+templates
+| `wait-for-platform` | platform | waits until Dev Spaces, Istio, Kiali, Argo CD, Gitea and
+Nexus are ready
+| `maven-warmup` | platform | fills the Nexus cache, so participants' first builds are fast
+| `user-setup` | users | creates the Gitea accounts, Argo CD tokens and the participants'
+credential Secrets
+|===
+
+A fresh installation takes about 10 to 15 minutes; the participants' workspaces are running 2 to
+3 minutes later. `cleanup.sh` removes everything again, including the cluster-wide changes.
+
+== What each participant gets
+
+[cols="2,3"]
+|===
+| Resource | Purpose
+
+| Project `my-project-<user>` | Part 1 (Inner Loop); the participant is `admin`
+| Project `cn-project-<user>` | Part 2 (Outer Loop), in the service mesh, deployed by the
+participant's Argo CD; the participant has `edit`
+| Project `devspaces-<user>` | the Dev Spaces workspace `wksp-end-to-end-dev`, created and
+started during the installation
+| Argo CD project `cn-project-<user>` | in the participants' Argo CD instance (namespace `argocd`)
+| Gitea account `<user>` | same password as the OpenShift user
+|===
+
+Participants have no access to other participants' projects, nor to the administrative
+namespaces (`openshift-gitops`, `argocd`, `gitea`, `nexus`, ...).
+
+== What connects the pieces
+
+The three repositories depend on each other through a few names and values. A customisation that
+changes one of them must change the others too:
+
+* *Names.* Projects and accounts are named `<purpose>-<user>` (`my-project-user1`,
+  `devspaces-user1`, ...). The charts create them, the lab guide shows them, and the scripts in
+  the code repository use them. New per-participant resources should follow the same pattern.
+* *Workspace environment.* The charts put variables such as `WORKSHOP_USER`,
+  `WORKSHOP_DEV_PROJECT`, `WORKSHOP_GITEA_URL` and `MAVEN_MIRROR_URL` into every workspace
+  container; the scripts in `.tasks/` read them. The full list is in the
+  {GITOPS_REPO_URL}#participant-workspace-and-tooling-image[gitops README^].
+* *Lab guide values.* Participants open the lab guide with URL parameters (their user name,
+  password, console and API URLs). The pages use them as attributes such as
+  `+{OPENSHIFT_USERNAME}+`, and derived ones such as `+{DEV_PROJECT}+`
+  (in `content/modules/ROOT/partials/_attributes.adoc`).
+* *Devfile command labels.* The lab guide tells participants to run commands by their label, for
+  example "Inner Loop - Deploy Coolstore". The labels are defined in the code repository's
+  `devfile.yaml` and must not change.
+* *Guide parts.* The lab guide can show the whole workshop, only Part 1, or only Part 2
+  (`--guide-part` of `bootstrap.sh`). Text in one part that refers to the other is wrapped in
+  `+ifeval::["{workshop-part}" == "all"]+`.
+* *Paths in the code repository.* The `maven-warmup` Job builds two services of the code
+  repository, using paths in `labs/` and `.tasks/solutions/`.
+
+== How changes reach a running workshop
+
+[cols="2,3"]
+|===
+| You change | It reaches the participants
+
+| the charts (gitops repository), pushed to `main`
+| Argo CD applies it within about three minutes; refresh the Application to speed it up. Jobs run
+again with the next sync of their Application.
+
+| the lab guide
+| after you build and push its image, and restart the lab guide:
+`oc rollout restart deployment/lab-guide -n lab-guide`
+
+| the code repository
+| new workspaces clone it; existing workspaces need `git pull` in `/projects/workshop`
+
+| the tooling image
+| workspaces started afterwards; running workspaces after a restart
+
+| a workspace setting (environment, credentials)
+| after the participant restarts the workspace from the Dev Spaces dashboard
+|===
+
+Most customisations are easiest to test on a fresh installation: run `cleanup.sh`, then
+`bootstrap.sh` again.
+
+Next: xref:own-git-server-and-registry.adoc[Using your own Git server and registry], or go
+straight to the first tutorial if you use GitHub and quay.io.

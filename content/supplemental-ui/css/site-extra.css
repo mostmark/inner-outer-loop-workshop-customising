@@ -1,0 +1,30 @@
+/* Additions to the theme of the workshop's lab guide. */
+
+/* Left-align images, as in the lab guide. */
+.doc .imageblock {
+  align-items: flex-start;
+}
+
+/* Allow wider pages. */
+.doc {
+  max-width: none;
+}
+
+/* Diagrams: full width up to their natural size. */
+.doc .imageblock.diagram img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Screenshot placeholders ([NOTE.screenshot-todo,caption=Screenshot]): a dashed box until the
+   screenshot exists. */
+.doc .admonitionblock.screenshot-todo > table {
+  border: 2px dashed #8a8d90;
+  background: #f5f5f5;
+}
+
+/* No ligatures in code: the code font would join "-<" in names like my-project-<user>. */
+.doc code,
+.doc pre {
+  font-variant-ligatures: none;
+}
