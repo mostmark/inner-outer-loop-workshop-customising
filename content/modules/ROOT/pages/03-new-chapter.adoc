@@ -1,0 +1,248 @@
+= Tutorial 3: Add a chapter
+include::partial$_attributes.adoc[]
+
+ACME wants its developers to learn a second way of building container images: with Shipwright,
+delivered on OpenShift as *Builds for Red Hat OpenShift*. In this tutorial you add that chapter to
+the lab guide. The operator it needs follows in tutorial 5, the code in tutorial 6.
+
+[cols="1,3"]
+|===
+| Goal | A new chapter "Build a Container Image with Shipwright" in your lab guide, built without
+warnings and previewed with per-user values
+| You need | xref:02-branding.adoc[Tutorial 2] completed; the local preview
+| Time | about 30 minutes
+|===
+
+Do all steps in your fork of the lab guide:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GUIDE_REPO}"
+----
+
+== How the lab guide is organised
+
+[cols="2,3"]
+|===
+| File | Contains
+
+| `content/modules/ROOT/pages/*.adoc` | one file per page (AsciiDoc)
+| `content/modules/ROOT/nav.adoc` | the navigation: one section per part, one entry per page
+| `content/modules/ROOT/partials/_attributes.adoc` | values that pages share, for example
+`+{DEV_PROJECT}+`; every page includes this file
+| `content/modules/ROOT/assets/images/` | the images of all pages
+|===
+
+=== Which part the chapter belongs to
+
+The lab guide can show the whole workshop, only Part 1, or only Part 2 (see
+xref:how-the-workshop-is-built.adoc#_what_connects_the_pieces[How the workshop is built]). It
+decides by *file name* and by *navigation section*:
+
+* Pages named `+inner-loop-*.adoc+` belong to Part 1, pages named `+outer-loop-*.adoc+` to Part 2.
+* In `nav.adoc`, the section `.Part 1: Inner Loop` lists Part 1, `.Part 2: Outer Loop` lists
+  Part 2.
+
+Building images is an Inner Loop topic, so the chapter becomes module 9 of Part 1:
+`inner-loop-09-shipwright.adoc`, listed in the Part 1 section. Then it appears in the whole guide
+and in the Part 1 guide, and not in the Part 2 guide.
+
+[WARNING]
+====
+Don't add a navigation section of your own after Part 2. The part selection hides a part's
+section up to the next heading that starts with `.Part`, so in the Part 1 guide your section
+would disappear together with Part 2.
+====
+
+== Step 1: Add an attribute for the participant's project
+
+Participants open the lab guide with their user name in the URL, and pages use it as
+`+{OPENSHIFT_USERNAME}+`. Values that pages derive from it live in
+`content/modules/ROOT/partials/_attributes.adoc`, for example:
+
+[source,asciidoc]
+----
+:DEV_PROJECT: my-project-{OPENSHIFT_USERNAME}
+----
+
+The chapter works in a project `acme-<user>` that every participant gets (you add it in
+tutorial 5). Add an attribute for it at the end of `_attributes.adoc`:
+
+[source,bash]
+----
+echo ':ACME_PROJECT: acme-{OPENSHIFT_USERNAME}' >> content/modules/ROOT/partials/_attributes.adoc
+----
+
+== Step 2: Write the page
+
+Get the finished chapter:
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+curl -fsSL -o content/modules/ROOT/pages/inner-loop-09-shipwright.adoc \
+  https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/inner-loop-09-shipwright.adoc
+----
+--
+Copy::
++
+--
+Create `content/modules/ROOT/pages/inner-loop-09-shipwright.adoc` with the content below.
+--
+====
+
+[source,asciidoc]
+------
+= Build a Container Image with Shipwright
+\include::partial$_attributes.adoc[]
+include::example$acme/inner-loop-09-shipwright.adoc[lines=3..-1]
+------
+
+Read through the file. It uses the building blocks of all the workshop's pages:
+
+[cols="2,3"]
+|===
+| Element | Purpose
+
+| `= Build a Container Image with Shipwright` and `+include::partial$_attributes.adoc[]+`
+| the page title; every page includes the shared attributes right after it
+
+| `+_15 MINUTE EXERCISE_+`
+| the time estimate, as on every module
+
+| `[sidebar]` with a title
+| the grey box that explains the concepts
+
+| `[#define_build]` before a heading
+| a fixed anchor, so links to the section keep working when its title changes
+
+| `++[tabs, subs="attributes+,+macros"]++` with `CLI::` and `IDE Task::`
+| two ways to do a step: commands in a terminal, or a devfile command (*Terminal → Run Task...*).
+CLI comes first. The IDE task "ACME - Build with Shipwright" is added in tutorial 6.
+
+| `++[source,shell,subs="attributes+",role=copypaste]++`
+| a command block with a copy button; `subs="attributes+"` fills in attributes such as
+`+{ACME_PROJECT}+`. Leave it out where the text must stay literal, as in the `oc logs` command
+with its `+{.status.taskRunName}+`.
+
+| `+link:{WORKSPACE_URL}[Workspace^]+`
+| a link built from attributes; `^` opens it in a new tab
+
+| `+kbd:[Ctrl+C]+`
+| a key to press
+|===
+
+[TIP]
+====
+The pages use attributes, never raw `%...%` placeholders: the browser fills in the values from
+the URL. A page of one part that refers to the other part wraps that text in
+`+ifeval::["{workshop-part}" == "all"]+` ... `endif::[]`, so it disappears when only one part is
+shown. This chapter doesn't refer to Part 2.
+====
+
+== Step 3: Add the page to the navigation
+
+In `content/modules/ROOT/nav.adoc`, add a line after module 8 of Part 1:
+
+[source,asciidoc]
+----
+* xref:inner-loop-08-app-config.adoc[8. Externalize Application Configuration]
+* xref:inner-loop-09-shipwright.adoc[9. Build a Container Image with Shipwright]
+----
+
+== Step 4: Build and check
+
+`build-site.sh` builds all three variants of the guide and stops at the first warning, for
+example a link to a page that doesn't exist or an image that is missing:
+
+[source,bash]
+----
+./build-site.sh
+grep -rE '%[A-Z_]+%' content/modules/ROOT/pages
+----
+
+=== Check
+
+* `build-site.sh` ends without warnings.
+* The `grep` command prints nothing: no page contains raw placeholders.
+* The new page exists in `www/` and `www-inner/`, but not in `www-outer/`:
++
+[source,bash]
+----
+ls www*/modules/inner-loop-09-shipwright.html
+----
+* In the preview (opened with the example URL parameters from
+  xref:01-fork-and-preview.adoc[tutorial 1]), *Part 1: Inner Loop* lists
+  *9. Build a Container Image with Shipwright*. The page shows `oc project acme-user1`, the image
+  `.../acme-user1/acme-hello:latest`, your fork `github.com/$GITHUB_ORG/{CODE_REPO}.git`, and the link
+  `acme-hello-acme-user1.apps.cluster.example.com`.
+
+// SCREENSHOT-TODO: 03-01-new-chapter-nav.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `03-01-new-chapter-nav.png` +
+The ACME lab guide in the local preview with the navigation open: *Part 1: Inner Loop* with the
+new entry *9. Build a Container Image with Shipwright* highlighted.
+====
+
+// SCREENSHOT-TODO: 03-02-new-chapter-page.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `03-02-new-chapter-page.png` +
+The new chapter, scrolled to *Define the Build*: the *CLI* tab with the Build YAML, where
+`acme-user1` and the fork's repository URL are filled in.
+====
+
+== Step 5: Commit and push
+
+[source,bash]
+----
+git add content/modules/ROOT/pages/inner-loop-09-shipwright.adoc \
+  content/modules/ROOT/partials/_attributes.adoc content/modules/ROOT/nav.adoc
+git commit -m "New chapter: Build a Container Image with Shipwright"
+git push
+----
+
+Participants can follow the chapter once tutorials 5 and 6 are done: the chapter needs the
+`acme-<user>` projects, the Builds operator, and the code in `labs/acme-hello`.
+
+== Adding screenshots to a chapter
+
+Screenshots go into `content/modules/ROOT/assets/images/` and into the page with
+`+image::<file>[<description>,<width>]+`. An image that doesn't exist yet makes
+`build-site.sh` fail, so add the `image::` line together with the file. Capture screenshots as a
+participant (for example `user1`), at a consistent browser size.
+
+== What you changed
+
+[cols="2,3"]
+|===
+| File | Change
+
+| `content/modules/ROOT/pages/inner-loop-09-shipwright.adoc` (new) | the chapter
+| `content/modules/ROOT/partials/_attributes.adoc` | the attribute `ACME_PROJECT`
+| `content/modules/ROOT/nav.adoc` | the chapter as module 9 of Part 1
+|===
+
+== Troubleshooting
+
+[cols="2,3"]
+|===
+| Problem | Solution
+
+| `build-site.sh` stops with `target of xref not found` | The file name in `nav.adoc` doesn't
+match the page's file name.
+| The page shows `+{ACME_PROJECT}+` literally | The command block lacks `subs="attributes+"`, or
+the attribute is missing in `_attributes.adoc`.
+| The page shows `acme-%openshift_username%` | Open the preview with the URL parameters.
+| The page appears in the Part 2 guide (`www-outer/`) | The file name doesn't start with
+`inner-loop-`.
+| The chapter is missing in the Part 1 guide | Its navigation entry is outside the
+`.Part 1: Inner Loop` section.
+|===
+
+Next: xref:04-install-from-forks.adoc[Tutorial 4: Install the workshop from your forks].

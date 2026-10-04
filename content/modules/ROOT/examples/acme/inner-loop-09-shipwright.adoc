@@ -1,0 +1,184 @@
+= Build a Container Image with Shipwright
+include::partial$_attributes.adoc[]
+
+_15 MINUTE EXERCISE_
+
+In this lab you will build a container image with *Shipwright*, a Kubernetes-native framework for
+building images, and run it on OpenShift.
+
+[sidebar]
+.Builds for Red Hat OpenShift
+--
+In the previous labs, the build tools of each framework built your images: the Quarkus
+OpenShift extension, Eclipse JKube, and Source-to-Image. https://shipwright.io[Shipwright^],
+delivered on OpenShift as *Builds for Red Hat OpenShift*, offers one way to build images from
+source code, whatever the language and tool, with three Kubernetes resources:
+
+* A *Build* describes what to build: the Git repository, the build strategy and where the image
+  goes.
+* A *BuildRun* runs a Build once. Every BuildRun produces a new image.
+* A *build strategy* describes how to build, for example `buildah` for a `Dockerfile`, or
+  `source-to-image`. The platform team provides the strategies; you choose one by name.
+--
+
+[#log_in]
+== Log in to OpenShift
+
+In your link:{WORKSPACE_URL}[Workspace^], open a terminal and switch to your ACME project.
+
+[tabs, subs="attributes+,+macros"]
+====
+
+CLI::
++
+--
+`*Execute the following commands in the terminal window*`
+
+[source,shell,subs="attributes+",role=copypaste]
+----
+oc login $(oc whoami --show-server) --username={OPENSHIFT_USERNAME} --password={OPENSHIFT_PASSWORD} --insecure-skip-tls-verify
+oc project {ACME_PROJECT}
+----
+
+NOTE: To open a terminal window, `*click on 'Terminal' -> 'New Terminal'*`
+--
+
+IDE Task::
++
+--
+`*Click on 'Terminal' -> 'Run Task...' -> 'devfile: OpenShift - Login'*`, then in a new terminal
+window:
+
+[source,shell,subs="attributes+",role=copypaste]
+----
+oc project {ACME_PROJECT}
+----
+--
+====
+
+[#define_build]
+== Define the Build
+
+The source code is in `labs/acme-hello` of your workspace: a small web page and a `Dockerfile`.
+Define a Build that builds it with the `buildah` strategy and pushes the image to OpenShift's
+internal registry.
+
+[tabs, subs="attributes+,+macros"]
+====
+
+CLI::
++
+--
+`*Execute the following commands in the terminal window*`
+
+[source,shell,subs="attributes+",role=copypaste]
+----
+oc apply -f - <<EOF
+apiVersion: shipwright.io/v1beta1
+kind: Build
+metadata:
+  name: acme-hello
+spec:
+  source:
+    type: Git
+    git:
+      url: {CODE_REPO_GIT_URL}
+      revision: {CODE_REPO_REF}
+    contextDir: labs/acme-hello
+  strategy:
+    kind: ClusterBuildStrategy
+    name: buildah
+  output:
+    image: image-registry.openshift-image-registry.svc:5000/{ACME_PROJECT}/acme-hello:latest
+EOF
+oc get builds.shipwright.io
+----
+--
+
+IDE Task::
++
+--
+`*Click on 'Terminal' -> 'Run Task...' -> 'devfile: ACME - Build with Shipwright'*`
+
+The task defines the Build, starts a BuildRun and follows its log, so it also covers the next
+section.
+--
+====
+
+The Build is registered when the column `REGISTERED` shows `True`:
+
+[source,shell]
+----
+NAME         REGISTERED   REASON      BUILDSTRATEGYKIND      BUILDSTRATEGYNAME   CREATIONTIME
+acme-hello   True         Succeeded   ClusterBuildStrategy   buildah             3s
+----
+
+NOTE: Use `builds.shipwright.io`, not `builds`: on OpenShift, `oc get builds` lists the
+Source-to-Image builds of the previous labs.
+
+[#run_build]
+== Run the Build
+
+Start the build with a BuildRun and follow it until it has finished:
+
+[source,shell,subs="attributes+",role=copypaste]
+----
+oc create -f - <<EOF
+apiVersion: shipwright.io/v1beta1
+kind: BuildRun
+metadata:
+  generateName: acme-hello-
+spec:
+  build:
+    name: acme-hello
+EOF
+oc get buildruns.shipwright.io -w
+----
+
+The first build takes about two minutes. When `SUCCEEDED` shows `True`, stop watching with
+kbd:[Ctrl+C].
+
+[source,shell]
+----
+NAME               SUCCEEDED   REASON      STARTTIME   COMPLETIONTIME
+acme-hello-x7k2p   True        Succeeded   2m10s       5s
+----
+
+The build runs in a pod of its own. To read its log, replace `<buildrun>` with the name of your
+BuildRun:
+
+[source,shell,role=copypaste]
+----
+oc logs $(oc get buildruns.shipwright.io <buildrun> -o jsonpath='{.status.taskRunName}')-pod -c step-build-and-push
+----
+
+The image is now in the internal registry of OpenShift:
+
+[source,shell,role=copypaste]
+----
+oc get imagestream acme-hello
+----
+
+[#deploy]
+== Deploy the Image
+
+Run the image, and make it reachable from your browser:
+
+[source,shell,subs="attributes+",role=copypaste]
+----
+oc create deployment acme-hello --image=image-registry.openshift-image-registry.svc:5000/{ACME_PROJECT}/acme-hello:latest --port=8080
+oc expose deployment acme-hello --port=8080
+oc expose service acme-hello
+----
+
+Open link:http://acme-hello-{ACME_PROJECT}.{OPENSHIFT_APPS_DOMAIN}[your ACME Hello page^]. It can
+take a few seconds until the page answers.
+
+[#summary]
+== Summary
+
+You built an image from source code with a Build and a BuildRun, without any build tool in your
+workspace. Each new BuildRun builds the current state of the Git repository again: commit, push,
+and create a BuildRun.
+
+That's all for this lab! You are ready to move on to the next lab.

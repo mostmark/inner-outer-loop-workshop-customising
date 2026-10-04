@@ -1,0 +1,215 @@
+= Tutorial 4: Install the workshop from your forks
+include::partial$_attributes.adoc[]
+
+ACME's lab guide is ready. Now ACME installs the whole workshop on its own cluster, from its own
+forks and with its own lab guide image.
+
+[cols="1,3"]
+|===
+| Goal | The workshop running on your cluster: installed from your gitops fork, with your lab guide
+image and your code repository
+| You need | xref:03-new-chapter.adoc[Tutorial 3] completed; an OpenShift {ocp_version} cluster
+as described in the xref:index.adoc#_what_you_need[Introduction]; `podman` and a quay.io account
+| Time | about 45 minutes, most of it waiting for the installation
+|===
+
+[NOTE]
+====
+The workshop's participant users (for example `user1` to `user3`) must already exist in the
+cluster's identity provider, with one shared password. The workshop's README explains other
+options, such as a password per user: {GITOPS_REPO_URL}#user-passwords[User Passwords^].
+====
+
+== Step 1: Build and push your lab guide image
+
+The cluster runs the lab guide as a container image. Your gitops fork already names your image
+(`quay.io/$QUAY_USER/inner-outer-loop-lab:latest`, set in tutorial 1 in
+`charts/lab-guide/values.yaml`). Build it from your fork of the lab guide and push it:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GUIDE_REPO}"
+podman login quay.io
+./build-push-container.sh
+----
+
+The script builds the guide (all three variants), then an image for `linux/amd64` and
+`linux/arm64`, and pushes it. It takes about three minutes.
+
+The cluster pulls the image without credentials, so the repository must be *public*: on quay.io,
+open the repository `inner-outer-loop-lab`, then *Settings → Repository Visibility → Make Public*.
+
+=== Check
+
+[source,bash]
+----
+curl -s "https://quay.io/api/v1/repository/$QUAY_USER/inner-outer-loop-lab" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); print("public:", d["is_public"], "tags:", list(d["tags"]))'
+----
+
+The output is `public: True tags: ['latest']`.
+
+== Step 2: Log in to the cluster
+
+Log in with `oc` as a cluster administrator:
+
+[source,bash]
+----
+oc login <API URL of your cluster>
+oc whoami --show-server
+----
+
+If the workshop is already installed on this cluster (from the original repositories or from an
+earlier attempt), remove it first; it takes a few minutes:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GITOPS_REPO}"
+./cleanup.sh --yes --keep-gitops
+----
+
+== Step 3: Install
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GITOPS_REPO}"
+export WORKSHOP_USER_PASSWORD='<password of the participant users>'
+./bootstrap.sh --users 3
+----
+
+`bootstrap.sh` installs OpenShift GitOps, creates the root Application from *your* gitops fork,
+and waits until everything is installed (see
+xref:how-the-workshop-is-built.adoc#_how_the_installation_works[How the installation works]). Its
+first lines show where it installs from:
+
+[source,text]
+----
+[08:11:48] Users:        user1..user3
+[08:11:48] Source:       https://github.com/<your GitHub org>/inner-outer-loop-workshop-gitops.git@main
+----
+
+`Source` must be your fork. If it shows `github.com/{GITHUB_UPSTREAM}/...`, the default in
+`bootstrap.sh` was not changed in tutorial 1: stop with kbd:[Ctrl+C], and run step 3 of
+xref:01-fork-and-preview.adoc[tutorial 1] again.
+
+The installation takes about 15 to 20 minutes; the participants' workspaces are running two or
+three minutes later. At the end, `bootstrap.sh` prints the lab guide's URL template.
+
+== Step 4: Check the installation
+
+Run the workshop's smoke test, and print the participants' lab guide URLs:
+
+[source,bash]
+----
+./smoke-tests/platform-check.sh
+./print-user-urls.sh
+----
+
+=== Check
+
+* `platform-check.sh` ends with `0 failed`.
+* All Applications are `Synced` and `Healthy`:
++
+[source,bash]
+----
+oc get applications -n openshift-gitops
+----
+* The Applications install from your fork:
++
+[source,bash]
+----
+oc get application inner-outer-loop-workshop -n openshift-gitops -o jsonpath='{.spec.source.repoURL}{"\n"}'
+----
+* The lab guide runs your image:
++
+[source,bash]
+----
+oc get deployment lab-guide -n lab-guide -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+----
+* The participants' workspaces use your code repository: their devfile comes from your fork,
+  and the folder `/projects/workshop` is a clone of it:
++
+[source,bash]
+----
+oc get dw wksp-end-to-end-dev -n devspaces-user1 -o jsonpath='{.spec.template.parent.uri}{"\n"}'
+oc exec -n devspaces-user1 deploy/$(oc get deploy -n devspaces-user1 -o name | cut -d/ -f2) -c workshop-tools -- \
+  git -C /projects/workshop log --oneline -1
+----
++
+The last commit is the one of tutorial 1, "Point the fork to ...".
+
+// SCREENSHOT-TODO: 04-01-argocd-applications.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `04-01-argocd-applications.png` +
+The `openshift-gitops` Argo CD UI as cluster administrator, *Applications* page: the root
+Application `inner-outer-loop-workshop` and its four child Applications, all *Synced* and
+*Healthy*.
+====
+
+Open the URL of `user1` that `print-user-urls.sh` printed, in a private browser window:
+
+* The lab guide has ACME's branding.
+* *Part 1: Inner Loop* lists *9. Build a Container Image with Shipwright*.
+* In *2. Get your Developer Workspace*, the link to the workspace opens Dev Spaces. After logging
+  in as `user1`, the workspace shows the folder `workshop` with your code repository.
+
+// SCREENSHOT-TODO: 04-02-guide-on-cluster.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `04-02-guide-on-cluster.png` +
+The ACME lab guide on the cluster, opened with `user1`'s URL from `print-user-urls.sh`: ACME header,
+the navigation with module 9 in Part 1, and the start page.
+====
+
+The new chapter is visible, but participants can't follow it yet: their `acme-<user>` projects and
+the Builds operator follow in tutorial 5, the code in tutorial 6.
+
+== What runs from where
+
+[cols="2,3"]
+|===
+| On the cluster | Comes from
+
+| everything Argo CD installs (Applications in `openshift-gitops`) | your gitops fork
+| the lab guide (`lab-guide`) | your image `quay.io/$QUAY_USER/inner-outer-loop-lab:latest`, built
+from your lab guide fork
+| the code in every workspace (`/projects/workshop`) | your code repository fork
+| the tooling container in every workspace | the original image `{TOOLS_IMAGE}`
+|===
+
+From now on, a change pushed to `main` of your gitops fork reaches the cluster within a few minutes
+(see xref:how-the-workshop-is-built.adoc#_how_changes_reach_a_running_workshop[How changes reach a
+running workshop]).
+
+== What you changed
+
+[cols="2,3"]
+|===
+| Where | Change
+
+| quay.io | your public image `inner-outer-loop-lab:latest`
+| your cluster | the workshop, installed from your forks
+|===
+
+== Troubleshooting
+
+[cols="2,3"]
+|===
+| Problem | Solution
+
+| `build-push-container.sh` says `QUAY_USER is not set` | Set it, see the
+xref:index.adoc#_your_values[Introduction].
+| `bootstrap.sh` waits long for `workshop-lab-guide`; `oc get pods -n lab-guide` shows
+`ImagePullBackOff` | The image repository on quay.io is not public, or the image name in
+`charts/lab-guide/values.yaml` is wrong. Fix it; the pod retries by itself.
+| An Application shows `repository not found` or `authentication required` | Argo CD can't read
+your gitops fork: it must be public, and `repoURL` must be its URL.
+| A workspace fails to start, with an error about the devfile | `devspaces.devfileURL` in
+`charts/workshop-users/values.yaml` must point to your code fork's `devfile.yaml` as a raw file;
+open the URL in a private browser window to check.
+| `platform-check.sh` reports failures | The workshop's README has a troubleshooting section:
+{GITOPS_REPO_URL}#troubleshooting[Troubleshooting^].
+|===
+
+Next: tutorial 5, *Add Builds for Red Hat OpenShift* (in preparation).

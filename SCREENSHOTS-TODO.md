@@ -28,3 +28,7 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 | `01-02-local-preview.png` | Tutorial 1 | the lab guide's start page in the local preview |
 | `02-01-header-before-after.png` | Tutorial 2 | original and ACME header bars, one above the other |
 | `02-02-browser-tab.png` | Tutorial 2 | browser tab with the ACME icon and title |
+| `03-01-new-chapter-nav.png` | Tutorial 3 | navigation with the new module 9 of Part 1 |
+| `03-02-new-chapter-page.png` | Tutorial 3 | the new chapter's *Define the Build* step with filled-in values |
+| `04-01-argocd-applications.png` | Tutorial 4 | `openshift-gitops` Argo CD: the five Applications Synced and Healthy |
+| `04-02-guide-on-cluster.png` | Tutorial 4 | the ACME lab guide on the cluster, opened with `user1`'s URL |

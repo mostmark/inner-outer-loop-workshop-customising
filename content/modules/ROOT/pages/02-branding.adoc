@@ -272,4 +272,4 @@ run `./build-site.sh` again. Then reload the browser without cache (kbd:[Shift] 
 | The old browser icon still shows | Browsers cache icons; open the preview in a private window.
 |===
 
-Next: tutorial 3, *Add a chapter* (in preparation).
+Next: xref:03-new-chapter.adoc[Tutorial 3: Add a chapter].

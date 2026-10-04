@@ -7,3 +7,5 @@
 .Tutorials
 * xref:01-fork-and-preview.adoc[1. Fork and preview the lab guide]
 * xref:02-branding.adoc[2. Change the branding]
+* xref:03-new-chapter.adoc[3. Add a chapter]
+* xref:04-install-from-forks.adoc[4. Install from your forks]

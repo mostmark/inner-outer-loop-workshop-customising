@@ -20,6 +20,7 @@ The workshop's repositories (all only `main`), which the tutorials describe and 
 | `content/modules/ROOT/nav.adoc` | navigation: "Before you start", then the tutorials; list only pages that exist |
 | `content/modules/ROOT/partials/_attributes.adoc` | the workshop's repository URLs and images; every page includes it after its title |
 | `content/modules/ROOT/assets/images/` | diagrams (`*.svg`) and screenshots (`*.png`) |
+| `content/modules/ROOT/examples/acme/` | files the tutorials give readers (for example the new chapter); test exactly these files in a scratch fork |
 | `content/supplemental-ui/` | theme additions; `supplemental_files` in `site.yml` is a directory, so every file there is active |
 | `SCREENSHOTS-TODO.md` | capture rules and the list of open screenshots |
 
@@ -52,6 +53,10 @@ private Git repositories and registries.
   cluster. Quote files by path and short snippet, never by line number, so the tutorials survive
   changes in the workshop.
 - Command output is shown as text, not as screenshots.
+- Show an example file with `include::example$acme/<file>[]` in a listing whose delimiter is
+  longer than any inside the file (`------`). Asciidoctor runs `include::` lines of the included
+  file even in a listing (also for `.txt` files): write such lines in the page with a backslash
+  (`\include::...`) and include the rest with `lines=`.
 - Blank line before and after every list. `ifeval`/attribute examples from the workshop are
   written with `+...+` so this site does not resolve them.
 
