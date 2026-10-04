@@ -32,3 +32,10 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 | `03-02-new-chapter-page.png` | Tutorial 3 | the new chapter's *Define the Build* step with filled-in values |
 | `04-01-argocd-applications.png` | Tutorial 4 | `openshift-gitops` Argo CD: the five Applications Synced and Healthy |
 | `04-02-guide-on-cluster.png` | Tutorial 4 | the ACME lab guide on the cluster, opened with `user1`'s URL |
+| `05-01-argocd-platform-builds.png` | Tutorial 5 | Argo CD `workshop-platform` with `OpenShiftBuild cluster` |
+| `05-02-installed-operators.png` | Tutorial 5 | Installed Operators: Builds for Red Hat OpenShift Succeeded |
+| `05-03-participant-projects.png` | Tutorial 5 | `user1`'s projects including `acme-user1` |
+| `06-01-workspace-explorer.png` | Tutorial 6 | `user1`'s workspace with `labs/acme-hello` open |
+| `06-02-run-task.png` | Tutorial 6 | Run Task list with "ACME - Build with Shipwright" |
+| `06-03-buildrun-succeeded.png` | Tutorial 6 | the BuildRun Succeeded in the console, as `user1` |
+| `06-04-acme-hello-app.png` | Tutorial 6 | the ACME Hello page in the browser |

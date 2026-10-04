@@ -94,8 +94,6 @@ The tutorials build on each other: do them in this order. At the end, ACME has a
 workshop with its own branding, a new chapter, the operator that chapter needs, and the matching
 exercise code.
 
-The tutorials are being written; the navigation shows the ones that are available.
-
 === Two kinds of users
 
 These tutorials use two terms consistently:

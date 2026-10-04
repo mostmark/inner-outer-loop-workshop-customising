@@ -1,0 +1,377 @@
+= Tutorial 5: Add an operator and per-participant resources
+include::partial$_attributes.adoc[]
+
+ACME's new chapter needs *Builds for Red Hat OpenShift* on the cluster, and a project
+`acme-<user>` for every participant. In this tutorial you add both to your gitops fork, the way the
+workshop adds everything: as part of the Helm charts that Argo CD installs, with a readiness
+check, a cleanup and smoke tests.
+
+[cols="1,3"]
+|===
+| Goal | Builds for Red Hat OpenShift installed by Argo CD, and a project `acme-<user>` per
+participant; removed again by `cleanup.sh`
+| You need | xref:04-install-from-forks.adoc[Tutorial 4] completed (the workshop installed from
+your forks); `helm`
+| Time | about 45 minutes
+|===
+
+== What a new operator touches
+
+The workshop installs everything through Argo CD, in waves (see
+xref:how-the-workshop-is-built.adoc#_how_the_installation_works[How the installation works]). An
+operator and what participants need from it touch six places in the gitops repository:
+
+[cols="1,2,2"]
+|===
+| # | Where | What
+
+| 1 | `charts/workshop-operators/values.yaml` | the operator's Subscription
+| 2 | `charts/workshop-platform/` | the operator's instance, the shared part
+| 3 | `charts/workshop-platform/templates/platform-readiness.yaml` | a check that the instance
+works, before participants' resources are created
+| 4 | `charts/workshop-users/` | the resources every participant gets
+| 5 | `cleanup.sh` | everything Argo CD can't remove
+| 6 | `smoke-tests/` | checks that it all works
+|===
+
+Do all steps in your gitops fork:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GITOPS_REPO}"
+----
+
+== Step 1: Look up the operator in the catalog
+
+Never guess channels or versions: ask the cluster's catalog.
+
+[source,bash]
+----
+oc get packagemanifest openshift-builds-operator -n openshift-marketplace \
+  -o jsonpath='{.status.defaultChannel}{"\n"}{range .status.channels[*]}{.name} {.currentCSV}{"\n"}{end}'
+----
+
+On OpenShift {ocp_version} it offers the channels `builds-1.8`, `builds-1.9` and `latest`. Pin a
+version channel, `builds-1.9`, so the operator is only upgraded when you change it. The operator
+supports only the install mode "all namespaces", and its description says that OpenShift
+Pipelines must be installed, which the workshop already does.
+
+== Step 2: Subscribe to the operator
+
+In `charts/workshop-operators/values.yaml`, add an entry at the end of `subscriptions`, after
+`gitea`:
+
+[source,yaml]
+----
+  # ACME: Builds for Red Hat OpenShift (Shipwright), for the chapter "Build a Container Image
+  # with Shipwright". Supports only "all namespaces", so it gets its own namespace with a
+  # cluster-wide OperatorGroup. Needs OpenShift Pipelines.
+  builds:
+    enabled: true
+    name: openshift-builds-operator
+    package: openshift-builds-operator
+    channel: builds-1.9
+    namespace: openshift-builds
+    ownNamespace: true
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: Automatic
+----
+
+That's all the operators chart needs. From this entry it creates:
+
+* the namespace `openshift-builds` and an OperatorGroup for all namespaces (`ownNamespace: true`);
+* the Subscription;
+* a line in the readiness Job `wait-for-operators`, which waits until the operator is installed.
+
+== Step 3: Configure the instance
+
+When the operator is installed, it creates its instance, `OpenShiftBuild cluster`, by itself. The
+workshop doesn't create it, it only *adjusts* it: with server-side apply, Argo CD sets just the
+fields in the file, and with `Delete=false` it never deletes the object, so it can't get in the
+way of the operator.
+
+The instance also starts a *Shared Resource CSI driver*, with a pod on every node. The workshop
+doesn't need it, so the file switches it off.
+
+Create `charts/workshop-platform/templates/builds.yaml`:
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+curl -fsSL -o charts/workshop-platform/templates/builds.yaml \
+  https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/gitops/builds.yaml
+----
+--
+Copy::
++
+--
+Create the file with the content below.
+--
+====
+
+[source,yaml]
+----
+include::example$acme/gitops/builds.yaml[]
+----
+
+Add the switch and its default to `charts/workshop-platform/values.yaml`, before `monitoring:`:
+
+[source,yaml]
+----
+# ACME: Builds for Red Hat OpenShift (operator installed by the operators chart).
+builds:
+  enabled: true
+  sharedResource: Disabled
+----
+
+== Step 4: Wait until it works
+
+The Job `wait-for-platform` makes the users wave wait until every shared service works. Shipwright
+works when its build strategies exist, so the check waits for the strategy `buildah`.
+
+In `charts/workshop-platform/templates/platform-readiness.yaml`, allow the Job to read build
+strategies: add a rule at the end of the ClusterRole's `rules`:
+
+[source,yaml]
+----
+  - apiGroups: ["shipwright.io"]
+    resources: ["clusterbuildstrategies"]
+    verbs: ["get", "list"]
+----
+
+In the same file, add the check before the Nexus check (`+{{- if .Values.nexus.enabled }}+`):
+
+[source,yaml]
+----
+              {{- if .Values.builds.enabled }}
+              check "Builds for Red Hat OpenShift (build strategy buildah)" bash -c "oc get clusterbuildstrategies.shipwright.io buildah -o name"
+              {{- end }}
+----
+
+== Step 5: Give every participant a project
+
+The users chart creates everything a participant gets, in a loop over the users. A new kind of
+per-participant resource follows the workshop's pattern: named `<purpose>-<user>`, labelled with
+the user, and with the participant's role in it.
+
+Create `charts/workshop-users/templates/acme-projects.yaml`:
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+curl -fsSL -o charts/workshop-users/templates/acme-projects.yaml \
+  https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/gitops/acme-projects.yaml
+----
+--
+Copy::
++
+--
+Create the file with the content below.
+--
+====
+
+[source,yaml]
+----
+include::example$acme/gitops/acme-projects.yaml[]
+----
+
+The `admin` role lets participants create `Build` and `BuildRun` objects: Builds for Red Hat
+OpenShift adds its permissions to the standard `admin`, `edit` and `view` roles.
+
+Add the switch at the end of `charts/workshop-users/values.yaml`:
+
+[source,yaml]
+----
+
+# ACME: one project acme-<user> per participant, where the participant is admin
+# (templates/acme-projects.yaml).
+acmeProjects:
+  enabled: true
+----
+
+== Step 6: Clean up what Argo CD can't
+
+`cleanup.sh` deletes the root Application; Argo CD then removes everything it manages, including
+the `acme-<user>` projects. It can't remove what the operator itself created, nor objects marked
+`Delete=false`. For Builds for Red Hat OpenShift, these are:
+
+* the instance `OpenShiftBuild cluster` (it removes Shipwright, its build strategies and webhook);
+* the operator (Subscription and ClusterServiceVersion) and its namespace;
+* its CRDs. The Shipwright CRDs convert between API versions through a webhook in
+  `openshift-builds`, so they must go together with the operator;
+* three ClusterRoles and a ClusterRoleBinding (`openshift-builds-...`) that remain after the
+  operator is removed.
+
+Make these changes in `cleanup.sh`:
+
+. Delete the instance first, before Pipelines, because Shipwright runs its builds on Pipelines.
+  Before the line `+log "Removing TektonConfig ...+`, add:
++
+[source,bash]
+----
+# ACME: Builds for Red Hat OpenShift runs its builds on OpenShift Pipelines, so it goes first.
+# Deleting OpenShiftBuild removes Shipwright, its build strategies and its webhook.
+log "Removing OpenShiftBuild (Builds for Red Hat OpenShift)"
+oc delete openshiftbuilds.operator.openshift.io cluster --ignore-not-found --wait=true --timeout=300s 2>/dev/null
+----
+. After `delete_operator gitea-operator gitea-operator gitea-operator`, add:
++
+[source,bash]
+----
+delete_operator openshift-builds openshift-builds-operator openshift-builds-operator
+----
+. Add `openshift-builds` to the operator namespaces: in the line
+  `oc delete namespace kiali-operator gitea-operator ...` and in the function `namespaces_left`
+  (`for ns in kiali-operator gitea-operator openshift-builds openshift-pipelines ...`).
+. Add `|openshift-builds-` to the list of ClusterRole and ClusterRoleBinding prefixes
+  (`grep -E '^(devworkspace-controller-|...|kiali-|openshift-builds-)'`).
+. In the two CRD lists (removal and the end-state check `leftovers`), add the Shipwright groups and
+  exactly the one CRD of the operator's own group:
++
+[source,bash]
+----
+... |pfe\.rhpds\.com|shipwright\.io|sharedresource\.openshift\.io)$|^openshiftbuilds\.operator\.openshift\.io$'
+----
++
+WARNING: Don't match `operator.openshift.io` as a whole: OpenShift's own operators use that group
+too (for example `consoles.operator.openshift.io`).
+. In `leftovers`, add `|openshift-builds$|acme-` to the namespace list and
+  `|openshift-builds-operator` to the CSV list.
+
+== Step 7: Extend the smoke tests
+
+* `smoke-tests/platform-check.sh`: add `openshift-builds/openshift-builds-operator` to the list of
+  operators (`for entry in ...`), and after the check `edit in cn-project-$user`:
++
+[source,bash]
+----
+  check "$user: admin in acme-$user, can create Shipwright builds" can_i_as "$user" create builds.shipwright.io "acme-$user"
+----
+* `smoke-tests/isolation-check.sh` checks that participants only see their own projects. Add
+  `acme`: `(my-project|cn-project|devspaces|acme)-$A`, and `"acme-$B"` to the list
+  `for ns in "my-project-$B" ...`.
+
+== Step 8: Check, commit and push
+
+[source,bash]
+----
+helm lint charts/workshop-operators charts/workshop-platform charts/workshop-users
+bash -n cleanup.sh smoke-tests/platform-check.sh smoke-tests/isolation-check.sh
+git add -A
+git commit -m "ACME: Builds for Red Hat OpenShift and a project per participant"
+git push
+----
+
+Argo CD applies the change within a few minutes. To start right away, refresh the root
+Application in the `openshift-gitops` Argo CD UI, or:
+
+[source,bash]
+----
+oc annotate application inner-outer-loop-workshop -n openshift-gitops argocd.argoproj.io/refresh=normal --overwrite
+----
+
+[NOTE]
+====
+On a running workshop, the three Applications sync your change at the same time. The platform
+sync then fails once with `no matches for kind "OpenShiftBuild"`, because the operator is not
+installed yet. Argo CD retries automatically and succeeds within a minute. On a new installation
+the waves install the operator first, and the error doesn't occur.
+====
+
+=== Check
+
+After about three minutes:
+
+[source,bash]
+----
+oc get applications -n openshift-gitops
+oc get csv -n openshift-builds
+oc get openshiftbuild cluster -o jsonpath='{.spec.sharedResource.state}{"\n"}'
+oc get clusterbuildstrategies
+oc get projects | grep acme-
+./smoke-tests/platform-check.sh
+----
+
+* All Applications are `Synced` and `Healthy`.
+* The ClusterServiceVersion `openshift-builds-operator.v1.9.x` is `Succeeded`.
+* `sharedResource` is `Disabled`.
+* The build strategies `buildah`, `buildpacks`, `buildpacks-extender` and `source-to-image` exist.
+* There is a project `acme-<user>` for every participant.
+* `platform-check.sh` ends with `0 failed` and lists the new checks.
+
+// SCREENSHOT-TODO: 05-01-argocd-platform-builds.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `05-01-argocd-platform-builds.png` +
+The `openshift-gitops` Argo CD UI as cluster administrator: the Application `workshop-platform`,
+tree view, with the new `OpenShiftBuild cluster` *Synced*.
+====
+
+// SCREENSHOT-TODO: 05-02-installed-operators.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `05-02-installed-operators.png` +
+OpenShift console as cluster administrator, *Ecosystem → Installed Operators*, project
+`openshift-builds`: "Builds for Red Hat OpenShift" with status *Succeeded*.
+====
+
+// SCREENSHOT-TODO: 05-03-participant-projects.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `05-03-participant-projects.png` +
+OpenShift console as `user1`, *Home → Projects*: `acme-user1`, `cn-project-user1`,
+`devspaces-user1` and `my-project-user1`, and no other participant's projects.
+====
+
+== What you changed
+
+[cols="2,3"]
+|===
+| File | Change
+
+| `charts/workshop-operators/values.yaml` | the Subscription
+| `charts/workshop-platform/templates/builds.yaml` (new) | the instance's settings
+| `charts/workshop-platform/values.yaml` | the switch `builds`
+| `charts/workshop-platform/templates/platform-readiness.yaml` | the readiness check and its
+permission
+| `charts/workshop-users/templates/acme-projects.yaml` (new) | the project `acme-<user>` per
+participant
+| `charts/workshop-users/values.yaml` | the switch `acmeProjects`
+| `cleanup.sh` | removal of the instance, the operator, its namespace, CRDs and cluster RBAC
+| `smoke-tests/platform-check.sh`, `smoke-tests/isolation-check.sh` | checks for the operator and
+the new projects
+|===
+
+The operator's resource use is small: about 0.1 vCPU and 0.3 GiB requested on the whole cluster.
+
+== Troubleshooting
+
+[cols="2,3"]
+|===
+| Problem | Solution
+
+| `workshop-platform` shows `no matches for kind "OpenShiftBuild"` | Only on a running workshop,
+right after the push: wait a minute for the retry. If it persists, check that the operator is
+installed: `oc get csv -n openshift-builds`.
+| `wait-for-platform` waits for "Builds for Red Hat OpenShift" | `oc get openshiftbuild cluster -o
+yaml` shows the instance's state; `oc get pods -n openshift-builds` its pods.
+| `isolation-check.sh` fails "sees only their own projects" | The `acme` part is missing in the
+check's project pattern (step 7).
+| `cleanup.sh` reports `crd builds.shipwright.io` (or another Shipwright CRD) as left over | The CRD
+pattern in the removal step is incomplete (step 6).
+| `cleanup.sh` waits a long time for "workshop Applications" | A finished hook Job may still carry
+Argo CD's `argocd.argoproj.io/hook-finalizer`, which blocks the deletion. Find it with
+`oc get jobs -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,FIN:.metadata.finalizers | grep hook-finalizer`
+and remove it: `oc patch job <name> -n <namespace> --type json -p '[{"op":"remove","path":"/metadata/finalizers"}]'`.
+|===
+
+Next: xref:06-exercise-code.adoc[Tutorial 6: Add the code for an exercise].

@@ -1,0 +1,323 @@
+= Tutorial 6: Add the code for an exercise
+include::partial$_attributes.adoc[]
+
+The last piece of ACME's chapter is in the code repository: the application participants build,
+a devfile command for the chapter's *IDE Task* tab, a solution for participants who skip ahead,
+and the cleanup. After this tutorial, participants can follow the chapter from start to finish.
+
+[cols="1,3"]
+|===
+| Goal | The ACME exercise in your code fork, and a participant who builds and runs ACME Hello
+following the new chapter
+| You need | xref:05-add-an-operator.adoc[Tutorial 5] completed
+| Time | about 30 minutes
+|===
+
+== How the code repository works
+
+Every participant's workspace clones your code fork to `/projects/workshop`, so participants see
+everything in it. Keep it to what they need.
+
+[cols="2,3"]
+|===
+| Path | Contains
+
+| `labs/` | the applications participants work on
+| `.tasks/` | the scripts behind the devfile commands; they all source `.tasks/workshop-env.sh`,
+which knows the participant's user, projects and this repository's URL (`CODE_REPO_URL`)
+| `.tasks/solutions/` | the finished state of the exercises, for participants who skip ahead
+| `devfile.yaml` | the workspace: its containers and the devfile commands (*Terminal → Run
+Task...*)
+|===
+
+[IMPORTANT]
+====
+The lab guide refers to devfile commands by their *label*. Never change an existing label;
+adding commands is fine.
+====
+
+Do all steps in your code fork:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{CODE_REPO}"
+----
+
+== Step 1: Add the application
+
+ACME Hello is a static web page served by Apache httpd. Its `Dockerfile` is all the `buildah`
+build strategy needs:
+
+[source,bash]
+----
+mkdir -p labs/acme-hello
+----
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
+curl -fsSL -o labs/acme-hello/Dockerfile "$B/Dockerfile"
+curl -fsSL -o labs/acme-hello/index.html "$B/index.html"
+----
+--
+Copy::
++
+--
+Create the two files with the content below.
+--
+====
+
+.`labs/acme-hello/Dockerfile`
+[source,dockerfile]
+----
+include::example$acme/code/Dockerfile[]
+----
+
+.`labs/acme-hello/index.html`
+[source,html]
+----
+include::example$acme/code/index.html[]
+----
+
+== Step 2: Add the script for the devfile command
+
+The chapter's *IDE Task* tab runs the devfile command "ACME - Build with Shipwright". Its script
+logs in as the participant (with `workshop_login` from `workshop-env.sh`), defines the Build in
+`acme-<user>` with your repository's URL, starts a BuildRun, and waits until it has finished.
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
+curl -fsSL -o .tasks/acme_build_shipwright.sh "$B/acme_build_shipwright.sh"
+chmod +x .tasks/acme_build_shipwright.sh
+----
+--
+Copy::
++
+--
+Create `.tasks/acme_build_shipwright.sh` with the content below, and make it executable:
+`chmod +x .tasks/acme_build_shipwright.sh`.
+--
+====
+
+.`.tasks/acme_build_shipwright.sh`
+[source,bash]
+----
+include::example$acme/code/acme_build_shipwright.sh[]
+----
+
+== Step 3: Add the devfile command
+
+In `devfile.yaml`, add the command after `inner-loop---deploy-coolstore`, the fast-forward of
+Part 1:
+
+[source,yaml]
+----
+  - id: acme---build-with-shipwright
+    exec:
+      label: ACME - Build with Shipwright
+      component: workshop-tools
+      workingDir: /projects/workshop/.tasks
+      commandLine: '. ./workshop-env.sh && ./acme_build_shipwright.sh'
+----
+
+The label must be exactly the one the chapter names.
+
+== Step 4: Add the solution
+
+Every exercise has a solution in `.tasks/solutions/`, which brings a participant to the end of
+the exercise. It must also work when it runs a second time.
+
+[tabs]
+====
+Download::
++
+--
+[source,bash]
+----
+B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
+mkdir -p .tasks/solutions/acme-shipwright
+curl -fsSL -o .tasks/solutions/acme-shipwright/deploy.sh "$B/deploy.sh"
+chmod +x .tasks/solutions/acme-shipwright/deploy.sh
+----
+--
+Copy::
++
+--
+Create `.tasks/solutions/acme-shipwright/deploy.sh` with the content below, and make it
+executable.
+--
+====
+
+.`.tasks/solutions/acme-shipwright/deploy.sh`
+[source,bash]
+----
+include::example$acme/code/deploy.sh[]
+----
+
+== Step 5: Extend the cleanup
+
+The devfile command "OpenShift - Cleanup" (`.tasks/openshift_cleanup.sh`) resets a participant's
+workshop, and must remove everything a participant can create. In `.tasks/openshift_cleanup.sh`,
+after `+workshop_clean_project "${STAGING_PROJECT}"+`, add:
+
+[source,bash]
+----
+
+# ACME: the Shipwright exercise in acme-<user>. Shipwright runs each build as a Tekton TaskRun,
+# which stays when its BuildRun is deleted; it keeps the build pod.
+info "Deleting the ACME Hello resources in acme-${WORKSHOP_USER}"
+oc delete buildruns.shipwright.io,taskruns.tekton.dev,builds.shipwright.io,deployment,service,route,imagestream \
+  --all -n "acme-${WORKSHOP_USER}" --ignore-not-found > /dev/null 2>&1
+----
+
+Also mention it in the comment at the top of the file:
+
+[source,bash]
+----
+#   - deletes the participant's Argo CD Applications <svc>-<user> (without cascading),
+#   - deletes the ACME Hello build and deployment in acme-<user>.
+----
+
+== Step 6: Commit and push
+
+[source,bash]
+----
+bash -n .tasks/acme_build_shipwright.sh .tasks/solutions/acme-shipwright/deploy.sh .tasks/openshift_cleanup.sh
+git add labs/acme-hello .tasks devfile.yaml
+git commit -m "ACME: code and devfile command for the Shipwright chapter"
+git push
+----
+
+== Step 7: Bring it to the workspaces
+
+[cols="2,3"]
+|===
+| Workspaces | Get the change
+
+| created afterwards | automatically: they clone `main` of your code fork
+| already running (for example after tutorial 4) | the code with `git pull` in
+`/projects/workshop`; the new devfile command after a restart of the workspace (from the Dev
+Spaces dashboard: *Restart*)
+|===
+
+For a test as `user1`, open `user1`'s workspace, run `git pull` in a terminal in
+`/projects/workshop`, and restart the workspace from the dashboard.
+
+== Step 8: Follow the chapter as a participant
+
+Open `user1`'s lab guide URL (`./print-user-urls.sh` in your gitops fork), go to
+*9. Build a Container Image with Shipwright*, and follow it: first with the *CLI* tab, then, after
+*OpenShift - Cleanup*, with the *IDE Task* tab.
+
+// SCREENSHOT-TODO: 06-01-workspace-explorer.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `06-01-workspace-explorer.png` +
+`user1`'s Dev Spaces workspace: the explorer with `workshop/labs/acme-hello` open (`Dockerfile`,
+`index.html`), `Dockerfile` shown in the editor.
+====
+
+// SCREENSHOT-TODO: 06-02-run-task.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `06-02-run-task.png` +
+In `user1`'s workspace, *Terminal → Run Task... → devfile*: the list of devfile commands with
+"ACME - Build with Shipwright" highlighted.
+====
+
+=== Check
+
+* The BuildRun succeeds; a build takes about half a minute, the first one on a node up to two
+  minutes.
+* *ACME Hello* opens at `\http://acme-hello-acme-user1.<apps domain>` and shows "Hello from ACME!
+  This page was built from source code with Shipwright."
+* The devfile command "ACME - Build with Shipwright" ends with
+  `BuildRun acme-hello-... succeeded`.
+* After *OpenShift - Cleanup*, `acme-user1` is empty: `oc get all -n acme-user1` finds no
+  resources.
+* The solution works, also a second time:
++
+[source,bash]
+----
+cd /projects/workshop/.tasks && . ./workshop-env.sh && ./solutions/acme-shipwright/deploy.sh
+----
+
+// SCREENSHOT-TODO: 06-03-buildrun-succeeded.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `06-03-buildrun-succeeded.png` +
+OpenShift console as `user1`, project `acme-user1`: the BuildRun `acme-hello-...` with status
+*Succeeded*. Check in the console where your version lists Shipwright builds (for example under
+*Builds*).
+====
+
+// SCREENSHOT-TODO: 06-04-acme-hello-app.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `06-04-acme-hello-app.png` +
+The ACME Hello page in the browser at `acme-hello-acme-user1.<apps domain>`.
+====
+
+== What you changed
+
+[cols="2,3"]
+|===
+| File | Change
+
+| `labs/acme-hello/` (new) | the application: `Dockerfile` and `index.html`
+| `.tasks/acme_build_shipwright.sh` (new) | the script behind the devfile command
+| `devfile.yaml` | the command "ACME - Build with Shipwright"
+| `.tasks/solutions/acme-shipwright/deploy.sh` (new) | the solution
+| `.tasks/openshift_cleanup.sh` | cleanup of `acme-<user>`
+|===
+
+== Troubleshooting
+
+[cols="2,3"]
+|===
+| Problem | Solution
+
+| *Run Task* doesn't list "ACME - Build with Shipwright" | The workspace started before the
+change: restart it from the Dev Spaces dashboard.
+| `labs/acme-hello` is missing in the workspace | Run `git pull` in `/projects/workshop`.
+| The BuildRun fails while fetching the source | The build clones your code fork from its URL
+(`CODE_REPO_URL`), so the fork must be readable without credentials, and the code pushed to
+`main`.
+| `oc apply` of the Build fails with `no matches for kind "Build"`, or the Build shows
+`REGISTERED False` | Builds for Red Hat OpenShift is not installed or not ready yet (tutorial 5):
+`oc get csv -n openshift-builds`, `oc get clusterbuildstrategies`.
+| `oc logs ...-pod` says the container is waiting to start | The build has not started yet. Wait
+a few seconds and try again.
+| The route answers `503` | The new route needs a few seconds; reload the page.
+|===
+
+== What's next
+
+ACME now has its own version of the workshop: its look, a new chapter, the operator that chapter
+needs, a project per participant and the exercise code, all installed through GitOps and
+removed again by `cleanup.sh`.
+
+To take over improvements of the original workshop later, merge its `main` into your forks, one
+repository at a time, for example:
+
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR/{GITOPS_REPO}"
+git remote add upstream {GITOPS_REPO_URL}.git   # once
+git fetch upstream
+git merge upstream/main
+----
+
+Conflicts appear only where you edited the same lines as the original. That's why the tutorials
+put most of ACME's changes into files of their own.

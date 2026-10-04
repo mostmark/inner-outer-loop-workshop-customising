@@ -1,0 +1,20 @@
+{{- if .Values.builds.enabled }}
+---
+# ACME: Builds for Red Hat OpenShift (Shipwright). The operator creates this object itself when
+# it is installed. Argo CD only sets the fields below (server-side apply) and never deletes the
+# object; cleanup.sh deletes it before it removes the operator.
+apiVersion: operator.openshift.io/v1alpha1
+kind: OpenShiftBuild
+metadata:
+  name: cluster
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true,Delete=false
+spec:
+  shipwright:
+    build:
+      state: Enabled
+  # The Shared Resource CSI driver (shares Secrets and ConfigMaps between namespaces) is not
+  # needed for the workshop; switching it off saves a pod on every node.
+  sharedResource:
+    state: {{ .Values.builds.sharedResource | quote }}
+{{- end }}

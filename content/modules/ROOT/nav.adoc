@@ -9,3 +9,5 @@
 * xref:02-branding.adoc[2. Change the branding]
 * xref:03-new-chapter.adoc[3. Add a chapter]
 * xref:04-install-from-forks.adoc[4. Install from your forks]
+* xref:05-add-an-operator.adoc[5. Add an operator]
+* xref:06-exercise-code.adoc[6. Add the exercise code]

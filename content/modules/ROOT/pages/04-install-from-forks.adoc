@@ -212,4 +212,4 @@ open the URL in a private browser window to check.
 {GITOPS_REPO_URL}#troubleshooting[Troubleshooting^].
 |===
 
-Next: tutorial 5, *Add Builds for Red Hat OpenShift* (in preparation).
+Next: xref:05-add-an-operator.adoc[Tutorial 5: Add an operator and per-participant resources].

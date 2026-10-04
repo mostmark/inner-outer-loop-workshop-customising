@@ -100,8 +100,8 @@ IDE Task::
 --
 `*Click on 'Terminal' -> 'Run Task...' -> 'devfile: ACME - Build with Shipwright'*`
 
-The task defines the Build, starts a BuildRun and follows its log, so it also covers the next
-section.
+The task defines the Build, starts a BuildRun, waits until it has finished and shows the end of
+the build log, so it also covers the next section.
 --
 ====
 
