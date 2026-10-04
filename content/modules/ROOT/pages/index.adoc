@@ -1,4 +1,4 @@
-= Customising the Inner & Outer Loop Workshop
+= Introduction
 include::partial$_attributes.adoc[]
 
 The *Inner & Outer Loop Workshop* is a hands-on workshop for developers on Red Hat OpenShift. Any
