@@ -370,7 +370,7 @@ check's project pattern (step 7).
 pattern in the removal step is incomplete (step 6).
 | `cleanup.sh` waits a long time for "workshop Applications" | A finished hook Job may still carry
 Argo CD's `argocd.argoproj.io/hook-finalizer`, which blocks the deletion. Find it with
-`oc get jobs -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,FIN:.metadata.finalizers | grep hook-finalizer`
+`oc get jobs -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,FIN:.metadata.finalizers \| grep hook-finalizer`
 and remove it: `oc patch job <name> -n <namespace> --type json -p '[{"op":"remove","path":"/metadata/finalizers"}]'`.
 |===
 
