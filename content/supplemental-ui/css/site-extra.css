@@ -28,3 +28,10 @@
 .doc pre {
   font-variant-ligatures: none;
 }
+
+/* Screenshots ([.screenshot] before image::): a thin frame, so white areas don't merge with the
+   page. */
+.doc .imageblock.screenshot img {
+  border: 1px solid #d2d2d2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}

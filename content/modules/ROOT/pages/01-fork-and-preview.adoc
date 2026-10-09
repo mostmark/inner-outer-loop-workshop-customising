@@ -14,7 +14,7 @@ the shell variables from the xref:index.adoc#_your_values[Introduction]
 
 == Step 1: Fork the three repositories
 
-Fork these repositories into your GitHub account or organisation (`$GITHUB_ORG`). Keep their
+Fork these repositories into your GitHub account or organisation (`$GITHUB_USER`). Keep their
 names.
 
 * {GITOPS_REPO_URL}[`{GITOPS_REPO}`^]
@@ -29,13 +29,8 @@ GitHub web::
 Open each repository, click *Fork*, choose your account or organisation as *Owner*, keep the
 *Repository name*, and click *Create fork*.
 
-// SCREENSHOT-TODO: 01-01-github-fork.png
-[NOTE.screenshot-todo,caption=Screenshot]
-=====
-*Screenshot to add:* `01-01-github-fork.png` +
-GitHub's *Create a new fork* page for `{GUIDE_REPO}`: *Owner* set to an example organisation
-(for example `acme-example`), *Repository name* unchanged, the *Create fork* button.
-=====
+[.screenshot]
+image::01-01-github-fork.png[GitHub's Create a new fork page]
 --
 GitHub CLI::
 +
@@ -45,11 +40,11 @@ With the https://cli.github.com/[GitHub CLI^], logged in with `gh auth login`:
 [source,bash,subs="attributes+"]
 ----
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
-  gh repo fork {GITHUB_UPSTREAM}/$repo --clone=false --org "$GITHUB_ORG"
+  gh repo fork {GITHUB_UPSTREAM}/$repo --clone=false --org "$GITHUB_USER"
 done
 ----
 
-For forks in your personal account, leave out `--org "$GITHUB_ORG"`.
+For forks in your personal account, leave out `--org "$GITHUB_USER"`.
 --
 ====
 
@@ -59,7 +54,7 @@ For forks in your personal account, leave out `--org "$GITHUB_ORG"`.
 ----
 mkdir -p "$WORKDIR" && cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
-  git clone "https://github.com/$GITHUB_ORG/$repo.git"
+  git clone "https://github.com/$GITHUB_USER/$repo.git"
 done
 ----
 
@@ -97,9 +92,9 @@ for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
       -e 'githubusercontent.com/{GITHUB_UPSTREAM}/' -e '{GITHUB_UPSTREAM}.github.io' \
       -e 'quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab' -- ':!docs' \
     | xargs sed -i '' \
-        -e "s|github.com/{GITHUB_UPSTREAM}/|github.com/$GITHUB_ORG/|g" \
-        -e "s|githubusercontent.com/{GITHUB_UPSTREAM}/|githubusercontent.com/$GITHUB_ORG/|g" \
-        -e "s|{GITHUB_UPSTREAM}.github.io|$GITHUB_ORG.github.io|g" \
+        -e "s|github.com/{GITHUB_UPSTREAM}/|github.com/$GITHUB_USER/|g" \
+        -e "s|githubusercontent.com/{GITHUB_UPSTREAM}/|githubusercontent.com/$GITHUB_USER/|g" \
+        -e "s|{GITHUB_UPSTREAM}.github.io/{GUIDE_REPO}?|$GITHUB_USER.github.io/{GUIDE_REPO}?|g" \
         -e "s|quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab|quay.io/$QUAY_USER/inner-outer-loop-lab|g")
 done
 ----
@@ -115,9 +110,9 @@ for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
       -e 'githubusercontent.com/{GITHUB_UPSTREAM}/' -e '{GITHUB_UPSTREAM}.github.io' \
       -e 'quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab' -- ':!docs' \
     | xargs sed -i \
-        -e "s|github.com/{GITHUB_UPSTREAM}/|github.com/$GITHUB_ORG/|g" \
-        -e "s|githubusercontent.com/{GITHUB_UPSTREAM}/|githubusercontent.com/$GITHUB_ORG/|g" \
-        -e "s|{GITHUB_UPSTREAM}.github.io|$GITHUB_ORG.github.io|g" \
+        -e "s|github.com/{GITHUB_UPSTREAM}/|github.com/$GITHUB_USER/|g" \
+        -e "s|githubusercontent.com/{GITHUB_UPSTREAM}/|githubusercontent.com/$GITHUB_USER/|g" \
+        -e "s|{GITHUB_UPSTREAM}.github.io/{GUIDE_REPO}?|$GITHUB_USER.github.io/{GUIDE_REPO}?|g" \
         -e "s|quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab|quay.io/$QUAY_USER/inner-outer-loop-lab|g")
 done
 ----
@@ -133,7 +128,7 @@ repository).
 
 === Check
 
-Only the tooling image still refers to the original workshop:
+Only the tooling image and the link to these tutorials still refer to the original workshop:
 
 [source,bash,subs="attributes+"]
 ----
@@ -144,14 +139,15 @@ done
 
 The output lists only lines with `quay.io/{GITHUB_UPSTREAM}/workshop-tools`, in the gitops
 repository (`CLAUDE.md`, `README.md`, `charts/workshop-platform/values.yaml`, `tools/`) and in the
-code repository's `devfile.yaml`. Review all changes with `git -C <repository> diff`.
+code repository's `devfile.yaml`, and the link to these tutorials in the gitops repository's
+`README.md`. Review all changes with `git -C <repository> diff`.
 
 == Step 4: Commit and push
 
 [source,bash,subs="attributes+"]
 ----
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
-  git -C "$repo" commit -am "Point the fork to $GITHUB_ORG" && git -C "$repo" push
+  git -C "$repo" commit -am "Point the fork to $GITHUB_USER" && git -C "$repo" push
 done
 ----
 
@@ -199,20 +195,14 @@ example values:
 http://localhost:8080/?OPENSHIFT_USERNAME=user1&OPENSHIFT_PASSWORD=openshift&OPENSHIFT_CONSOLE_URL=console-openshift-console.apps.cluster.example.com&OPENSHIFT_API_URL=api.cluster.example.com:6443
 ----
 
-// SCREENSHOT-TODO: 01-02-local-preview.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `01-02-local-preview.png` +
-The lab guide in the local preview at `localhost:8080`, opened with the example URL above:
-the start page "Welcome to the Inner & Outer Loop Workshop" with the navigation on the left.
-====
+image::01-02-local-preview.png[The lab guide in the local preview]
 
 === Check
 
 * The start page "Welcome to the Inner & Outer Loop Workshop" opens.
 * In *Part 1: Inner Loop* → *2. Get your Developer Workspace*, the page shows `my-project-user1`
   and links to `devspaces.apps.cluster.example.com`: the guide filled in the values from the URL.
-* The links to the example code point to your fork: `github.com/$GITHUB_ORG/{CODE_REPO}`.
+* The links to the example code point to your fork: `github.com/$GITHUB_USER/{CODE_REPO}`.
 
 Keep the preview running: tutorials 2 and 3 use it.
 
@@ -226,7 +216,7 @@ The lab guide repository publishes every push to `main` on GitHub Pages
 . *Settings → Pages*: set *Source* to *GitHub Actions*.
 . Push a commit, or run the workflow *github pages* by hand.
 
-The guide is then at `\https://$GITHUB_ORG.github.io/{GUIDE_REPO}`. Add the URL parameters above
+The guide is then at `\https://$GITHUB_USER.github.io/{GUIDE_REPO}`. Add the URL parameters above
 to see per-user values.
 
 == What you changed
@@ -236,7 +226,7 @@ to see per-user values.
 | Repository | Change
 
 | all three forks | references to the original repositories and to the lab guide image now
-point to `$GITHUB_ORG` and `$QUAY_USER`; one commit "Point the fork to ..."
+point to `$GITHUB_USER` and `$QUAY_USER`; one commit "Point the fork to ..."
 |===
 
 == Troubleshooting
@@ -249,7 +239,7 @@ point to `$GITHUB_ORG` and `$QUAY_USER`; one commit "Point the fork to ..."
 (`sed -i ''`).
 | `sed: can't read ...: No such file or directory` | You used the macOS command on Linux. Use the
 *Linux* tab.
-| The check in step 3 still finds `github.com/{GITHUB_UPSTREAM}` | `GITHUB_ORG` was empty when you
+| The check in step 3 still finds `github.com/{GITHUB_UPSTREAM}` | `GITHUB_USER` was empty when you
 ran the commands. Set it (see the xref:index.adoc#_your_values[Introduction]) and run step 3 again.
 | The page shows `%openshift_username%` instead of `user1` | Open the preview with the URL
 parameters, as shown in step 5.

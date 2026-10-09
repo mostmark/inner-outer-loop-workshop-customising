@@ -44,6 +44,38 @@ in the gitops repository.
 
 All three repositories use only the branch `main`, and the images use the tag `latest`.
 
+== How the lab guide is made
+
+The lab guide is a website built with https://antora.org[Antora^]. You write its content in
+https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[AsciiDoc^], a plain-text
+markup language, and Antora turns it into static HTML:
+
+[cols="2,3"]
+|===
+| In the lab guide repository | Contains
+
+| `content/modules/ROOT/pages/` | one AsciiDoc file per page
+| `content/modules/ROOT/nav.adoc` | the navigation
+| `content/modules/ROOT/partials/_attributes.adoc` | values that pages share (attributes)
+| `content/modules/ROOT/assets/images/` | the images
+| `site.yml` | the Antora playbook: where the content comes from, which theme, which extensions
+| `content/lib/` | Antora extensions, for example the tabs (*CLI* / *IDE Task*) and the part selection
+|===
+
+* *The look* comes from a theme (Antora calls it a UI bundle), the one of the Red Hat Demo
+  Platform's lab guides. You don't change the theme itself; files listed in `site.yml` replace
+  parts of it (xref:02-branding.adoc[tutorial 2]).
+* *The participants' values* (user name, password, cluster URLs) are not built into the pages. The
+  site is the same for everyone; the browser fills in the values from the URL a participant opens
+  it with.
+* *The build:* `build-site.sh` runs Antora and writes the site to `www/`, once for the whole
+  workshop and once for each part. The `Containerfile` puts the result into an image with an
+  Apache web server.
+
+You can preview your changes on your own computer, without a cluster
+(xref:01-fork-and-preview.adoc[tutorial 1]), and xref:03-new-chapter.adoc[tutorial 3] walks
+through writing a page.
+
 == How the installation works
 
 The workshop is installed with OpenShift GitOps (Argo CD), as an *app of apps*. You run one
@@ -54,7 +86,10 @@ image::00b-02-installation.svg[Order of the installation]
 
 . `bootstrap.sh` installs OpenShift GitOps, gives its Argo CD instance (`openshift-gitops`) the
   permissions it needs, creates the Secrets that must not be in Git (the participants'
-  passwords), and creates the *root Application*.
+  passwords), and creates the *root Application*. It also adds two health checks to Argo CD: one
+  makes each wave wait until the previous Application is complete, the other treats an operator
+  as installed even when a newer version waits for manual approval (Kiali is pinned to one
+  version).
 . The root Application creates four *child Applications*, one per chart, in *waves*. Each wave
   starts only when the previous one is synced and healthy:
 +
@@ -77,6 +112,8 @@ workspace
 |===
 | Job | Application | Does
 
+| `approve-kiali-ossm` | operators | approves the installation of exactly the pinned Kiali version;
+later versions stay unapproved
 | `wait-for-operators` | operators | waits until every operator is installed
 | `nexus-config`, `cluster-integration`, `hide-sample-templates` | platform | configure Nexus,
 the console plugins and the image stream for Java 21 builds, and hide OpenShift's sample database
@@ -88,7 +125,7 @@ Nexus are ready
 credential Secrets
 |===
 
-A fresh installation takes about 10 to 15 minutes; the participants' workspaces are running 2 to
+A fresh installation takes about 15 to 20 minutes; the participants' workspaces are running 2 to
 3 minutes later. `cleanup.sh` removes everything again, including the cluster-wide changes.
 
 == What each participant gets

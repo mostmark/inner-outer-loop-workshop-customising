@@ -85,7 +85,7 @@ first lines show where it installs from:
 [source,text]
 ----
 [08:11:48] Users:        user1..user3
-[08:11:48] Source:       https://github.com/<your GitHub org>/inner-outer-loop-workshop-gitops.git@main
+[08:11:48] Source:       https://github.com/<GITHUB_USER>/inner-outer-loop-workshop-gitops.git@main
 ----
 
 `Source` must be your fork. If it shows `github.com/{GITHUB_UPSTREAM}/...`, the default in

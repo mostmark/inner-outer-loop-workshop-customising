@@ -5,6 +5,9 @@ The tutorials use GitHub for your forks and quay.io for your images. You can use
 server (for example GitLab, Gitea or GitHub Enterprise) and another container registry instead.
 This page lists what changes. If you use GitHub and quay.io, you can skip it.
 
+The tutorials were tested end to end this way: with the three repositories on a self-hosted
+GitLab, and the lab guide image in a quay.io organisation.
+
 [IMPORTANT]
 ====
 The cluster must be able to *read* your repositories and images *without credentials*: the
@@ -64,8 +67,74 @@ Open the URL in a private browser window: it must show the plain file without a 
 | not covered; preview locally (tutorial 1) or on the cluster
 |===
 
-The URL formats in the commands of the tutorials are GitHub's. Replace them with your server's
-where they appear.
+== Tutorial 1, steps 2 and 3 on your own Git server
+
+The commands of tutorial 1 use GitHub's URL formats. On your own server, use these instead. Set the
+address of your group or organisation once, without a trailing slash:
+
+[source,bash]
+----
+export GIT_BASE=https://gitlab.example.com/acme
+----
+
+*Step 2*, clone your copies:
+
+[source,bash,subs="attributes+"]
+----
+mkdir -p "$WORKDIR" && cd "$WORKDIR"
+for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
+  git clone "$GIT_BASE/$repo.git"
+done
+----
+
+*Step 3*, point the copies to each other. These commands are for GitLab; the first `sed` expression
+writes GitLab's raw-file URL of `devfile.yaml`. For another server, change `/-/raw/main/` to that
+server's format (see the table above).
+
+[tabs]
+====
+macOS::
++
+--
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR"
+for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
+  (cd "$repo" && git grep -l -e 'github.com/{GITHUB_UPSTREAM}/' -e 'githubusercontent.com/{GITHUB_UPSTREAM}/' \
+      -e 'quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab' -- ':!docs' \
+    | xargs sed -i '' -E \
+        -e "s|https://raw.githubusercontent.com/{GITHUB_UPSTREAM}/([a-z-]+)/main/|$GIT_BASE/\1/-/raw/main/|g" \
+        -e "s|https://github.com/{GITHUB_UPSTREAM}/|$GIT_BASE/|g" \
+        -e "s|github.com/{GITHUB_UPSTREAM}/|${GIT_BASE#https://}/|g" \
+        -e "s|quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab|quay.io/$QUAY_USER/inner-outer-loop-lab|g")
+done
+----
+--
+Linux::
++
+--
+[source,bash,subs="attributes+"]
+----
+cd "$WORKDIR"
+for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
+  (cd "$repo" && git grep -l -e 'github.com/{GITHUB_UPSTREAM}/' -e 'githubusercontent.com/{GITHUB_UPSTREAM}/' \
+      -e 'quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab' -- ':!docs' \
+    | xargs sed -i -E \
+        -e "s|https://raw.githubusercontent.com/{GITHUB_UPSTREAM}/([a-z-]+)/main/|$GIT_BASE/\1/-/raw/main/|g" \
+        -e "s|https://github.com/{GITHUB_UPSTREAM}/|$GIT_BASE/|g" \
+        -e "s|github.com/{GITHUB_UPSTREAM}/|${GIT_BASE#https://}/|g" \
+        -e "s|quay.io/{GITHUB_UPSTREAM}/inner-outer-loop-lab|quay.io/$QUAY_USER/inner-outer-loop-lab|g")
+done
+----
+--
+====
+
+Check the result as in tutorial 1. Besides the tooling image and the link to these tutorials,
+`git grep -n {GITHUB_UPSTREAM} -- ':!docs'` also shows the GitHub Pages preview link in the lab
+guide's `README.adoc`, which doesn't apply to your server. Make sure `devspaces.devfileURL` in `charts/workshop-users/values.yaml` opens the
+plain `devfile.yaml` in a private browser window.
+
+In the other tutorials, read `github.com/$GITHUB_USER` as your server's address (`$GIT_BASE`).
 
 == Your own container registry
 
@@ -81,6 +150,9 @@ To use another registry, change the `IMAGE=` line of the script in your fork, fo
 ----
 IMAGE="registry.example.com/acme/inner-outer-loop-lab:latest"
 ----
+
+Both scripts stop with `QUAY_USER is not set` before they reach the `IMAGE=` line. Set
+`QUAY_USER` anyway (any value, for example your user name), or remove that check in your fork.
 
 Log in with `podman login <registry>` before you run the script, and make the image repository
 readable without credentials. Then use the same image name in the chart values (see the table

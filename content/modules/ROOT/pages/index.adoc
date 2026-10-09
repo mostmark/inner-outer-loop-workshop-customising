@@ -8,7 +8,7 @@ its own chapters, its own code and additional operators.
 These tutorials show you how. You work through a complete example: the fictional company *ACME*
 turns the workshop into its own version, step by step.
 
-The site is written for two groups:
+These tutorials are written for two personas:
 
 * *Content authors*, who change the lab guide: the look, the text, new chapters.
 * *Platform teams*, who install the workshop and change what runs on the cluster: operators,
@@ -58,14 +58,8 @@ The two parts can run as one event or on two days. Each participant gets:
   Part 2;
 * accounts in the shared *Gitea* (Git server) and *Argo CD* instances, and access to *Kiali*.
 
-// SCREENSHOT-TODO: 00a-01-participant-view.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `00a-01-participant-view.png` +
-What a participant sees, as `user1`: the lab guide (left half) next to the Dev Spaces workspace
-with the VS Code editor and the `workshop` folder open (right half). Use a full-HD browser
-window, light theme.
-====
+[.screenshot]
+image::00a-01-participant-view.png[What a participant sees: the lab guide next to the Dev Spaces workspace]
 
 The workshop is built for OpenShift {ocp_version} with OpenShift Dev Spaces {devspaces_version},
 OpenShift Pipelines {pipelines_version}, OpenShift GitOps {gitops_version} and OpenShift Service
@@ -129,7 +123,7 @@ every terminal you use:
 
 [source,bash]
 ----
-export GITHUB_ORG=<your GitHub user or organisation>
+export GITHUB_USER=<your GitHub user or organisation>
 export QUAY_USER=<your quay.io user or organisation>   # where your lab guide image goes
 export WORKDIR=~/acme-workshop                          # where your forks are cloned
 ----

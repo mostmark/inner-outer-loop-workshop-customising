@@ -47,7 +47,7 @@ private Git repositories and registries.
 - Terms: "you" is the person customising the workshop; a "participant" attends the workshop.
 - Every tutorial page: goal, prerequisites and time; steps (tabs for alternatives); a check;
   "What you changed"; troubleshooting.
-- Reader-specific values are shell variables set on the Introduction page: `GITHUB_ORG`,
+- Reader-specific values are shell variables set on the Introduction page: `GITHUB_USER`,
   `QUAY_USER`, `WORKDIR`. Never write a real user's names, passwords or host names.
 - Verify every fact against the workshop's repositories and, for cluster steps, on a test
   cluster. Quote files by path and short snippet, never by line number, so the tutorials survive
@@ -74,6 +74,8 @@ private Git repositories and registries.
   ====
   ```
 
+- A captured screenshot replaces its box as `[.screenshot]` + `image::<file>[<description>]` (the role adds
+  a thin frame).
 - File names `<page>-<number>-<subject>.png` (`00a`, `00b`, ... for the introduction pages,
   `01`-`06` for the tutorials). Add every placeholder to `SCREENSHOTS-TODO.md`.
 - Diagrams are SVG files written by hand, used with `[.diagram]` before `image::`. Check them in a

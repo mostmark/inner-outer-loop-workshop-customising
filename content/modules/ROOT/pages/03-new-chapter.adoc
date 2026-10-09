@@ -178,7 +178,7 @@ ls www*/modules/inner-loop-09-shipwright.html
 * In the preview (opened with the example URL parameters from
   xref:01-fork-and-preview.adoc[tutorial 1]), *Part 1: Inner Loop* lists
   *9. Build a Container Image with Shipwright*. The page shows `oc project acme-user1`, the image
-  `.../acme-user1/acme-hello:latest`, your fork `github.com/$GITHUB_ORG/{CODE_REPO}.git`, and the link
+  `.../acme-user1/acme-hello:latest`, your fork `github.com/$GITHUB_USER/{CODE_REPO}.git`, and the link
   `acme-hello-acme-user1.apps.cluster.example.com`.
 
 // SCREENSHOT-TODO: 03-01-new-chapter-nav.png
