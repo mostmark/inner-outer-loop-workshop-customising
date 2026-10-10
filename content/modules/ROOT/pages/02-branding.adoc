@@ -209,14 +209,21 @@ Run `./build-site.sh` again and reload the browser.
 
 Open the preview with the example URL from xref:01-fork-and-preview.adoc[tutorial 1].
 
-// SCREENSHOT-TODO: 02-01-header-before-after.png
+// SCREENSHOT-TODO: 02-01-header-before.png
 [NOTE.screenshot-todo,caption=Screenshot]
 ====
-*Screenshot to add:* `02-01-header-before-after.png` +
-Two header bars one above the other: the original (Red Hat Demo Platform logo, dark grey bar,
-"Inner & Outer Loop Workshop") and ACME's (ACME logo, blue bar, "ACME Developer Workshop"),
-each with the top of the page "2. Get your Developer Workspace" below, so the orange links and
-the highlighted current page are visible.
+*Screenshot to add:* `02-01-header-before.png` +
+Before the branding: the top of the page "2. Get your Developer Workspace" in the local preview,
+with the theme's header bar (Red Hat Demo Platform logo, dark grey bar, "Inner & Outer Loop
+Workshop") and the navigation. Capture it after tutorial 1, before you change anything.
+====
+
+// SCREENSHOT-TODO: 02-01-header-after.png
+[NOTE.screenshot-todo,caption=Screenshot]
+====
+*Screenshot to add:* `02-01-header-after.png` +
+After the branding: the same page and window size, with ACME's header bar (ACME logo, blue bar,
+"ACME Developer Workshop"), the orange links and the highlighted current page.
 ====
 
 === Check

@@ -23,7 +23,8 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 
 | File | Page | Shows |
 |---|---|---|
-| `02-01-header-before-after.png` | Tutorial 2 | original and ACME header bars, one above the other |
+| `02-01-header-before.png` | Tutorial 2 | the original header bar on "2. Get your Developer Workspace", before the branding |
+| `02-01-header-after.png` | Tutorial 2 | the same page with ACME's header bar, links and current page |
 | `02-02-browser-tab.png` | Tutorial 2 | browser tab with the ACME icon and title |
 | `03-01-new-chapter-nav.png` | Tutorial 3 | navigation with the new module 9 of Part 1 |
 | `03-02-new-chapter-page.png` | Tutorial 3 | the new chapter's *Define the Build* step with filled-in values |
