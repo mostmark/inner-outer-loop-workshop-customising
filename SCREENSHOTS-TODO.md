@@ -23,8 +23,6 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 
 | File | Page | Shows |
 |---|---|---|
-| `04-01-argocd-applications.png` | Tutorial 4 | `openshift-gitops` Argo CD: the five Applications Synced and Healthy |
-| `04-02-guide-on-cluster.png` | Tutorial 4 | the ACME lab guide on the cluster, opened with `user1`'s URL |
 | `05-01-argocd-platform-builds.png` | Tutorial 5 | Argo CD `workshop-platform` with `OpenShiftBuild cluster` |
 | `05-02-installed-operators.png` | Tutorial 5 | Installed Operators: Builds for Red Hat OpenShift Succeeded |
 | `05-03-participant-projects.png` | Tutorial 5 | `user1`'s projects including `acme-user1` |

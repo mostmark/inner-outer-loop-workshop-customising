@@ -138,14 +138,35 @@ oc exec -n devspaces-user1 deploy/$(oc get deploy -n devspaces-user1 -o name | c
 +
 The last commit is the one of tutorial 1, "Point the fork to ...".
 
-// SCREENSHOT-TODO: 04-01-argocd-applications.png
-[NOTE.screenshot-todo,caption=Screenshot]
+You can see the same in the Argo CD UI of the `openshift-gitops` instance, which installs the
+workshop:
+
+. Open its address. In the OpenShift console, it is in the application menu (the grid icon at the
+  top right) as *Cluster Argo CD*; on the command line:
++
+[source,bash,role=copypaste]
+----
+oc get route openshift-gitops-server -n openshift-gitops -o jsonpath='https://{.spec.host}{"\n"}'
+----
+. Click *LOG IN VIA OPENSHIFT* and log in as your cluster administrator.
+. The *Applications* page shows the root Application `inner-outer-loop-workshop` and its four
+  child Applications, all *Synced* and *Healthy*.
+
+[NOTE]
 ====
-*Screenshot to add:* `04-01-argocd-applications.png` +
-The `openshift-gitops` Argo CD UI as cluster administrator, *Applications* page: the root
-Application `inner-outer-loop-workshop` and its four child Applications, all *Synced* and
-*Healthy*.
+This Argo CD instance shows the Applications only to members of the OpenShift group
+`cluster-admins`; the cluster-admin role alone is not enough. If the page is empty, add your user
+to the group, then log out of Argo CD and in again:
+
+[source,bash,role=copypaste]
+----
+oc adm groups new cluster-admins <your user>         # if the group doesn't exist yet
+oc adm groups add-users cluster-admins <your user>   # if it does
+----
 ====
+
+[.screenshot]
+image::04-01-argocd-applications.png[The workshop's Applications in the openshift-gitops Argo CD UI]
 
 Open the URL of `user1` that `print-user-urls.sh` printed, in a private browser window:
 
@@ -154,13 +175,8 @@ Open the URL of `user1` that `print-user-urls.sh` printed, in a private browser 
 * In *2. Get your Developer Workspace*, the link to the workspace opens Dev Spaces. After logging
   in as `user1`, the workspace shows the folder `workshop` with your code repository.
 
-// SCREENSHOT-TODO: 04-02-guide-on-cluster.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `04-02-guide-on-cluster.png` +
-The ACME lab guide on the cluster, opened with `user1`'s URL from `print-user-urls.sh`: ACME header,
-the navigation with module 9 in Part 1, and the start page.
-====
+[.screenshot]
+image::04-02-guide-on-cluster.png[The ACME lab guide on the cluster]
 
 The new chapter is visible, but participants can't follow it yet: their `acme-<user>` projects and
 the Builds operator follow in tutorial 5, the code in tutorial 6.
@@ -208,6 +224,8 @@ your gitops fork: it must be public, and `repoURL` must be its URL.
 | A workspace fails to start, with an error about the devfile | `devspaces.devfileURL` in
 `charts/workshop-users/values.yaml` must point to your code fork's `devfile.yaml` as a raw file;
 open the URL in a private browser window to check.
+| The Argo CD UI shows no Applications | Your user is not in the group `cluster-admins` (see the
+note in step 4).
 | `platform-check.sh` reports failures | The workshop's README has a troubleshooting section:
 {GITOPS_REPO_URL}#troubleshooting[Troubleshooting^].
 |===
