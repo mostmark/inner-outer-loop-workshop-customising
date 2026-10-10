@@ -184,21 +184,8 @@ ls www*/modules/inner-loop-09-shipwright.html
   `.../acme-user1/acme-hello:latest`, your fork `github.com/$GITHUB_USER/{CODE_REPO}.git`, and the link
   `acme-hello-acme-user1.apps.cluster.example.com`.
 
-// SCREENSHOT-TODO: 03-01-new-chapter-nav.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `03-01-new-chapter-nav.png` +
-The ACME lab guide in the local preview with the navigation open: *Part 1: Inner Loop* with the
-new entry *9. Build a Container Image with Shipwright* highlighted.
-====
-
-// SCREENSHOT-TODO: 03-02-new-chapter-page.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `03-02-new-chapter-page.png` +
-The new chapter, scrolled to *Define the Build*: the *CLI* tab with the Build YAML, where
-`acme-user1` and the fork's repository URL are filled in.
-====
+[.screenshot]
+image::03-01-new-chapter-nav.png[The new chapter as module 9 of Part 1]
 
 == Step 5: Commit and push
 
