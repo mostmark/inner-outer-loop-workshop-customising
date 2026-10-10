@@ -23,9 +23,6 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 
 | File | Page | Shows |
 |---|---|---|
-| `05-01-argocd-platform-builds.png` | Tutorial 5 | Argo CD `workshop-platform` with `OpenShiftBuild cluster` |
-| `05-02-installed-operators.png` | Tutorial 5 | Installed Operators: Builds for Red Hat OpenShift Succeeded |
-| `05-03-participant-projects.png` | Tutorial 5 | `user1`'s projects including `acme-user1` |
 | `06-01-workspace-explorer.png` | Tutorial 6 | `user1`'s workspace with `labs/acme-hello` open |
 | `06-02-run-task.png` | Tutorial 6 | Run Task list with "ACME - Build with Shipwright" |
 | `06-03-buildrun-succeeded.png` | Tutorial 6 | the BuildRun Succeeded in the console, as `user1` |

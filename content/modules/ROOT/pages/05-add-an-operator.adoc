@@ -329,29 +329,30 @@ oc get projects | grep acme-
 * There is a project `acme-<user>` for every participant.
 * `platform-check.sh` ends with `0 failed` and lists the new checks.
 
-// SCREENSHOT-TODO: 05-01-argocd-platform-builds.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `05-01-argocd-platform-builds.png` +
-The `openshift-gitops` Argo CD UI as cluster administrator: the Application `workshop-platform`,
-tree view, with the new `OpenShiftBuild cluster` *Synced*.
-====
+You can see the same in the web consoles:
 
-// SCREENSHOT-TODO: 05-02-installed-operators.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `05-02-installed-operators.png` +
-OpenShift console as cluster administrator, *Ecosystem → Installed Operators*, project
-`openshift-builds`: "Builds for Red Hat OpenShift" with status *Succeeded*.
-====
+* *In Argo CD:* open the `openshift-gitops` Argo CD UI (as in
+  xref:04-install-from-forks.adoc[tutorial 4]), click the Application `workshop-platform`, and find
+  the `OpenShiftBuild` named `cluster` in its tree.
++
+.The `OpenShiftBuild` named `cluster` (OSB, framed) in the tree of `workshop-platform`: synced from your fork. To its right, what the operator created for it, such as the `ShipwrightBuild`.
+[.screenshot]
+image::05-01-argocd-platform-builds.png[OpenShiftBuild cluster in the Argo CD tree of workshop-platform]
 
-// SCREENSHOT-TODO: 05-03-participant-projects.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `05-03-participant-projects.png` +
-OpenShift console as `user1`, *Home → Projects*: `acme-user1`, `cn-project-user1`,
-`devspaces-user1` and `my-project-user1`, and no other participant's projects.
-====
+* *In the OpenShift console, as cluster administrator:* go to *Ecosystem → Installed Operators*.
+  The list shows the operator in the namespace `openshift-builds`, with the status *Succeeded*.
++
+.The Builds for Red Hat OpenShift Operator (framed) under Installed Operators, installed in `openshift-builds`.
+[.screenshot]
+image::05-02-installed-operators.png[Builds for Red Hat OpenShift Operator under Installed Operators]
+
+* *In the OpenShift console, as a participant:* log in as `user1` in a private browser window and
+  go to *Home → Projects*. `user1` sees their new project `acme-user1` next to the other workshop
+  projects, and none of the other participants' projects.
++
+.The projects of `user1`: the new `acme-user1` (framed) and the workshop's other three projects.
+[.screenshot]
+image::05-03-participant-projects.png[The projects of user1, including acme-user1]
 
 == What you changed
 
