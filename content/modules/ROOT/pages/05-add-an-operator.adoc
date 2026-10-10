@@ -1,8 +1,8 @@
 = Tutorial 5: Add an operator and per-participant resources
 include::partial$_attributes.adoc[]
 
-ACME's new chapter needs *Builds for Red Hat OpenShift* on the cluster, and a project
-`acme-<user>` for every participant. In this tutorial you add both to your gitops fork, the way the
+ACME's new chapter needs the *Builds for Red Hat OpenShift Operator* to be installed and available
+on the cluster, and a project `acme-<user>` for every participant. In this tutorial you add both to your gitops fork, the way the
 workshop adds everything: as part of the Helm charts that Argo CD installs, with a readiness
 check, a cleanup and smoke tests.
 
