@@ -15,7 +15,7 @@ warnings and previewed with per-user values
 
 Do all steps in your fork of the lab guide:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GUIDE_REPO}"
 ----
@@ -60,7 +60,7 @@ Participants open the lab guide with their user name in the URL, and pages use i
 `+{OPENSHIFT_USERNAME}+`. Values that pages derive from it live in
 `content/modules/ROOT/partials/_attributes.adoc`, for example:
 
-[source,asciidoc]
+[source,asciidoc,role=copypaste]
 ----
 :DEV_PROJECT: my-project-{OPENSHIFT_USERNAME}
 ----
@@ -68,7 +68,7 @@ Participants open the lab guide with their user name in the URL, and pages use i
 The chapter works in a project `acme-<user>` that every participant gets (you add it in
 tutorial 5). Add an attribute for it at the end of `_attributes.adoc`:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 echo ':ACME_PROJECT: acme-{OPENSHIFT_USERNAME}' >> content/modules/ROOT/partials/_attributes.adoc
 ----
@@ -82,7 +82,9 @@ Get the finished chapter:
 Download::
 +
 --
-[source,bash]
+Download the chapter into your fork. The command fetches exactly the file shown below this box:
+
+[source,bash,role=copypaste]
 ----
 curl -fsSL -o content/modules/ROOT/pages/inner-loop-09-shipwright.adoc \
   https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/inner-loop-09-shipwright.adoc
@@ -91,11 +93,12 @@ curl -fsSL -o content/modules/ROOT/pages/inner-loop-09-shipwright.adoc \
 Copy::
 +
 --
-Create `content/modules/ROOT/pages/inner-loop-09-shipwright.adoc` with the content below.
+Create `content/modules/ROOT/pages/inner-loop-09-shipwright.adoc` with the content shown below this
+box.
 --
 ====
 
-[source,asciidoc]
+[source,asciidoc,role=copypaste]
 ------
 = Build a Container Image with Shipwright
 \include::partial$_attributes.adoc[]
@@ -148,7 +151,7 @@ shown. This chapter doesn't refer to Part 2.
 
 In `content/modules/ROOT/nav.adoc`, add a line after module 8 of Part 1:
 
-[source,asciidoc]
+[source,asciidoc,role=copypaste]
 ----
 * xref:inner-loop-08-app-config.adoc[8. Externalize Application Configuration]
 * xref:inner-loop-09-shipwright.adoc[9. Build a Container Image with Shipwright]
@@ -159,7 +162,7 @@ In `content/modules/ROOT/nav.adoc`, add a line after module 8 of Part 1:
 `build-site.sh` builds all three variants of the guide and stops at the first warning, for
 example a link to a page that doesn't exist or an image that is missing:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 ./build-site.sh
 grep -rE '%[A-Z_]+%' content/modules/ROOT/pages
@@ -171,7 +174,7 @@ grep -rE '%[A-Z_]+%' content/modules/ROOT/pages
 * The `grep` command prints nothing: no page contains raw placeholders.
 * The new page exists in `www/` and `www-inner/`, but not in `www-outer/`:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 ls www*/modules/inner-loop-09-shipwright.html
 ----
@@ -199,7 +202,7 @@ The new chapter, scrolled to *Define the Build*: the *CLI* tab with the Build YA
 
 == Step 5: Commit and push
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 git add content/modules/ROOT/pages/inner-loop-09-shipwright.adoc \
   content/modules/ROOT/partials/_attributes.adoc content/modules/ROOT/nav.adoc

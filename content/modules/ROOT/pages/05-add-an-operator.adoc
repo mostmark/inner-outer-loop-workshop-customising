@@ -36,7 +36,7 @@ works, before participants' resources are created
 
 Do all steps in your gitops fork:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GITOPS_REPO}"
 ----
@@ -45,7 +45,7 @@ cd "$WORKDIR/{GITOPS_REPO}"
 
 Never guess channels or versions: ask the cluster's catalog.
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get packagemanifest openshift-builds-operator -n openshift-marketplace \
   -o jsonpath='{.status.defaultChannel}{"\n"}{range .status.channels[*]}{.name} {.currentCSV}{"\n"}{end}'
@@ -61,7 +61,7 @@ Pipelines must be installed, which the workshop already does.
 In `charts/workshop-operators/values.yaml`, add an entry at the end of `subscriptions`, after
 `gitea`:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
   # ACME: Builds for Red Hat OpenShift (Shipwright), for the chapter "Build a Container Image
   # with Shipwright". Supports only "all namespaces", so it gets its own namespace with a
@@ -101,7 +101,9 @@ Create `charts/workshop-platform/templates/builds.yaml`:
 Download::
 +
 --
-[source,bash]
+Download the file into your fork. The command fetches exactly the file shown below this box:
+
+[source,bash,role=copypaste]
 ----
 curl -fsSL -o charts/workshop-platform/templates/builds.yaml \
   https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/gitops/builds.yaml
@@ -110,18 +112,18 @@ curl -fsSL -o charts/workshop-platform/templates/builds.yaml \
 Copy::
 +
 --
-Create the file with the content below.
+Create the file with the content shown below this box.
 --
 ====
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 include::example$acme/gitops/builds.yaml[]
 ----
 
 Add the switch and its default to `charts/workshop-platform/values.yaml`, before `monitoring:`:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 # ACME: Builds for Red Hat OpenShift (operator installed by the operators chart).
 builds:
@@ -137,7 +139,7 @@ works when its build strategies exist, so the check waits for the strategy `buil
 In `charts/workshop-platform/templates/platform-readiness.yaml`, allow the Job to read build
 strategies: add a rule at the end of the ClusterRole's `rules`:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
   - apiGroups: ["shipwright.io"]
     resources: ["clusterbuildstrategies"]
@@ -146,7 +148,7 @@ strategies: add a rule at the end of the ClusterRole's `rules`:
 
 In the same file, add the check before the Nexus check (`+{{- if .Values.nexus.enabled }}+`):
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
               {{- if .Values.builds.enabled }}
               check "Builds for Red Hat OpenShift (build strategy buildah)" bash -c "oc get clusterbuildstrategies.shipwright.io buildah -o name"
@@ -166,7 +168,9 @@ Create `charts/workshop-users/templates/acme-projects.yaml`:
 Download::
 +
 --
-[source,bash]
+Download the file into your fork. The command fetches exactly the file shown below this box:
+
+[source,bash,role=copypaste]
 ----
 curl -fsSL -o charts/workshop-users/templates/acme-projects.yaml \
   https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/gitops/acme-projects.yaml
@@ -175,11 +179,11 @@ curl -fsSL -o charts/workshop-users/templates/acme-projects.yaml \
 Copy::
 +
 --
-Create the file with the content below.
+Create the file with the content shown below this box.
 --
 ====
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 include::example$acme/gitops/acme-projects.yaml[]
 ----
@@ -189,7 +193,7 @@ OpenShift adds its permissions to the standard `admin`, `edit` and `view` roles.
 
 Add the switch at the end of `charts/workshop-users/values.yaml`:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 
 # ACME: one project acme-<user> per participant, where the participant is admin
@@ -216,7 +220,7 @@ Make these changes in `cleanup.sh`:
 . Delete the instance first, before Pipelines, because Shipwright runs its builds on Pipelines.
   Before the line `+log "Removing TektonConfig ...+`, add:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 # ACME: Builds for Red Hat OpenShift runs its builds on OpenShift Pipelines, so it goes first.
 # Deleting OpenShiftBuild removes Shipwright, its build strategies and its webhook.
@@ -225,7 +229,7 @@ oc delete openshiftbuilds.operator.openshift.io cluster --ignore-not-found --wai
 ----
 . After `delete_operator gitea-operator gitea-operator gitea-operator`, add:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 delete_operator openshift-builds openshift-builds-operator openshift-builds-operator
 ----
@@ -237,7 +241,7 @@ delete_operator openshift-builds openshift-builds-operator openshift-builds-oper
 . In the two CRD lists (removal and the end-state check `leftovers`), add the Shipwright groups and
   exactly the one CRD of the operator's own group:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 ... |pfe\.rhpds\.com|shipwright\.io|sharedresource\.openshift\.io)$|^openshiftbuilds\.operator\.openshift\.io$'
 ----
@@ -252,7 +256,7 @@ too (for example `consoles.operator.openshift.io`).
 * `smoke-tests/platform-check.sh`: add `openshift-builds/openshift-builds-operator` to the list of
   operators (`for entry in ...`), and after the check `edit in cn-project-$user`:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
   check "$user: admin in acme-$user, can create Shipwright builds" can_i_as "$user" create builds.shipwright.io "acme-$user"
 ----
@@ -262,7 +266,7 @@ too (for example `consoles.operator.openshift.io`).
 
 == Step 8: Check, commit and push
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 helm lint charts/workshop-operators charts/workshop-platform charts/workshop-users
 bash -n cleanup.sh smoke-tests/platform-check.sh smoke-tests/isolation-check.sh
@@ -274,7 +278,7 @@ git push
 Argo CD applies the change within a few minutes. To start right away, refresh the root
 Application in the `openshift-gitops` Argo CD UI, or:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc annotate application inner-outer-loop-workshop -n openshift-gitops argocd.argoproj.io/refresh=normal --overwrite
 ----
@@ -291,7 +295,7 @@ the waves install the operator first, and the error doesn't occur.
 
 After about three minutes:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get applications -n openshift-gitops
 oc get csv -n openshift-builds

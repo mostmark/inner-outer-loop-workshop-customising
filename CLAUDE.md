@@ -53,6 +53,9 @@ private Git repositories and registries.
   cluster. Quote files by path and short snippet, never by line number, so the tutorials survive
   changes in the workshop.
 - Command output is shown as text, not as screenshots.
+- Every code block a reader copies (commands, file contents, snippets) gets `role=copypaste`, for
+  example `[source,bash,role=copypaste]`: the theme then adds a copy button. Blocks that only show
+  output don't.
 - Show an example file with `include::example$acme/<file>[]` in a listing whose delimiter is
   longer than any inside the file (`------`). Asciidoctor runs `include::` lines of the included
   file even in a listing (also for `.txt` files): write such lines in the page with a backslash

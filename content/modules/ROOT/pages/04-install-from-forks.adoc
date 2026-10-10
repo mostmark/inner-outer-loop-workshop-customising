@@ -26,7 +26,7 @@ The cluster runs the lab guide as a container image. Your gitops fork already na
 (`quay.io/$QUAY_USER/inner-outer-loop-lab:latest`, set in tutorial 1 in
 `charts/lab-guide/values.yaml`). Build it from your fork of the lab guide and push it:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GUIDE_REPO}"
 podman login quay.io
@@ -41,7 +41,7 @@ open the repository `inner-outer-loop-lab`, then *Settings → Repository Visibi
 
 === Check
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 curl -s "https://quay.io/api/v1/repository/$QUAY_USER/inner-outer-loop-lab" \
   | python3 -c 'import json,sys; d=json.load(sys.stdin); print("public:", d["is_public"], "tags:", list(d["tags"]))'
@@ -53,7 +53,7 @@ The output is `public: True tags: ['latest']`.
 
 Log in with `oc` as a cluster administrator:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc login <API URL of your cluster>
 oc whoami --show-server
@@ -62,7 +62,7 @@ oc whoami --show-server
 If the workshop is already installed on this cluster (from the original repositories or from an
 earlier attempt), remove it first; it takes a few minutes:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GITOPS_REPO}"
 ./cleanup.sh --yes --keep-gitops
@@ -70,7 +70,7 @@ cd "$WORKDIR/{GITOPS_REPO}"
 
 == Step 3: Install
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GITOPS_REPO}"
 export WORKSHOP_USER_PASSWORD='<password of the participant users>'
@@ -99,7 +99,7 @@ three minutes later. At the end, `bootstrap.sh` prints the lab guide's URL templ
 
 Run the workshop's smoke test, and print the participants' lab guide URLs:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 ./smoke-tests/platform-check.sh
 ./print-user-urls.sh
@@ -110,26 +110,26 @@ Run the workshop's smoke test, and print the participants' lab guide URLs:
 * `platform-check.sh` ends with `0 failed`.
 * All Applications are `Synced` and `Healthy`:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get applications -n openshift-gitops
 ----
 * The Applications install from your fork:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get application inner-outer-loop-workshop -n openshift-gitops -o jsonpath='{.spec.source.repoURL}{"\n"}'
 ----
 * The lab guide runs your image:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get deployment lab-guide -n lab-guide -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ----
 * The participants' workspaces use your code repository: their devfile comes from your fork,
   and the folder `/projects/workshop` is a clone of it:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 oc get dw wksp-end-to-end-dev -n devspaces-user1 -o jsonpath='{.spec.template.parent.uri}{"\n"}'
 oc exec -n devspaces-user1 deploy/$(oc get deploy -n devspaces-user1 -o name | cut -d/ -f2) -c workshop-tools -- \

@@ -40,7 +40,7 @@ active: `site.yml` lists that folder without `contents`, and Antora ignores such
 
 Do all steps in your fork of the lab guide:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GUIDE_REPO}"
 mkdir -p content/branding/img content/branding/css content/branding/partials
@@ -51,7 +51,7 @@ mkdir -p content/branding/img content/branding/css content/branding/partials
 Use your own logo as SVG or PNG. For the tutorial, create a simple ACME logo (white text for the
 dark header bar) and an icon:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 cat > content/branding/img/acme-logo.svg <<'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40" width="150" height="40">
@@ -73,7 +73,7 @@ EOF
 The theme draws the header bar in `#191919` and links in red (`#e00`). A small style sheet
 overrides them:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 cat > content/branding/css/acme.css <<'EOF'
 /* ACME colours, applied on top of the theme. */
@@ -98,7 +98,7 @@ browser shows its CSS classes and the theme's rules.
 
 The header shows the ACME logo, links it to ACME's website, and keeps the theme's *Links* menu:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 cat > content/branding/partials/header-content.hbs <<'EOF'
 <header class="header">
@@ -147,7 +147,7 @@ Font Awesome icons that the theme's version loads, and adds the ACME style sheet
 In `site.yml`, add one entry per file to `ui.supplemental_files`, before the entry
 `- path: .nojekyll`:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
     # ACME branding: each entry replaces a file of the theme (path) with a file of this repository (contents).
     - path: partials/header-content.hbs
@@ -167,14 +167,14 @@ In `site.yml`, add one entry per file to `ui.supplemental_files`, before the ent
 Change the titles: in `site.yml` the site title (header bar and browser tab), in
 `content/antora.yml` the component title (navigation and breadcrumbs):
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 # site.yml
 site:
   title: ACME Developer Workshop
 ----
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
 # content/antora.yml
 title: ACME Developer Workshop
@@ -183,7 +183,7 @@ title: ACME Developer Workshop
 The *Links* menu in the header comes from `page-links` at the end of `content/antora.yml`. Replace
 the entry with ACME's:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
     page-links:
     - url: https://www.example.com
@@ -231,7 +231,7 @@ image::02-02-acme-start-page.png[The lab guide with ACME's branding]
 
 == Step 6: Commit and push
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 git add content/branding site.yml content/antora.yml
 git commit -m "ACME branding: logo, colours, title, footer, browser icon"

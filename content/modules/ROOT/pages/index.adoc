@@ -121,7 +121,7 @@ which the workshop's README lists under {GITOPS_REPO_URL}#cluster-wide-changes[C
 Commands in these tutorials use shell variables for the values that are yours. Set them once in
 every terminal you use:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 export GITHUB_USER=<your GitHub user or organisation>
 export QUAY_USER=<your quay.io user or organisation>   # where your lab guide image goes

@@ -38,7 +38,7 @@ adding commands is fine.
 
 Do all steps in your code fork:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{CODE_REPO}"
 ----
@@ -48,7 +48,7 @@ cd "$WORKDIR/{CODE_REPO}"
 ACME Hello is a static web page served by Apache httpd. Its `Dockerfile` is all the `buildah`
 build strategy needs:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 mkdir -p labs/acme-hello
 ----
@@ -58,7 +58,9 @@ mkdir -p labs/acme-hello
 Download::
 +
 --
-[source,bash]
+Download the files into your fork. The commands fetch exactly the files shown below this box:
+
+[source,bash,role=copypaste]
 ----
 B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
 curl -fsSL -o labs/acme-hello/Dockerfile "$B/Dockerfile"
@@ -68,18 +70,18 @@ curl -fsSL -o labs/acme-hello/index.html "$B/index.html"
 Copy::
 +
 --
-Create the two files with the content below.
+Create the two files with the content shown below this box.
 --
 ====
 
 .`labs/acme-hello/Dockerfile`
-[source,dockerfile]
+[source,dockerfile,role=copypaste]
 ----
 include::example$acme/code/Dockerfile[]
 ----
 
 .`labs/acme-hello/index.html`
-[source,html]
+[source,html,role=copypaste]
 ----
 include::example$acme/code/index.html[]
 ----
@@ -95,7 +97,9 @@ logs in as the participant (with `workshop_login` from `workshop-env.sh`), defin
 Download::
 +
 --
-[source,bash]
+Download the file into your fork. The command fetches exactly the file shown below this box:
+
+[source,bash,role=copypaste]
 ----
 B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
 curl -fsSL -o .tasks/acme_build_shipwright.sh "$B/acme_build_shipwright.sh"
@@ -105,13 +109,14 @@ chmod +x .tasks/acme_build_shipwright.sh
 Copy::
 +
 --
-Create `.tasks/acme_build_shipwright.sh` with the content below, and make it executable:
+Create `.tasks/acme_build_shipwright.sh` with the content shown below this box, and make it
+executable:
 `chmod +x .tasks/acme_build_shipwright.sh`.
 --
 ====
 
 .`.tasks/acme_build_shipwright.sh`
-[source,bash]
+[source,bash,role=copypaste]
 ----
 include::example$acme/code/acme_build_shipwright.sh[]
 ----
@@ -121,7 +126,7 @@ include::example$acme/code/acme_build_shipwright.sh[]
 In `devfile.yaml`, add the command after `inner-loop---deploy-coolstore`, the fast-forward of
 Part 1:
 
-[source,yaml]
+[source,yaml,role=copypaste]
 ----
   - id: acme---build-with-shipwright
     exec:
@@ -143,7 +148,9 @@ the exercise. It must also work when it runs a second time.
 Download::
 +
 --
-[source,bash]
+Download the file into your fork. The command fetches exactly the file shown below this box:
+
+[source,bash,role=copypaste]
 ----
 B=https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/code
 mkdir -p .tasks/solutions/acme-shipwright
@@ -154,13 +161,13 @@ chmod +x .tasks/solutions/acme-shipwright/deploy.sh
 Copy::
 +
 --
-Create `.tasks/solutions/acme-shipwright/deploy.sh` with the content below, and make it
-executable.
+Create `.tasks/solutions/acme-shipwright/deploy.sh` with the content shown below this box, and
+make it executable.
 --
 ====
 
 .`.tasks/solutions/acme-shipwright/deploy.sh`
-[source,bash]
+[source,bash,role=copypaste]
 ----
 include::example$acme/code/deploy.sh[]
 ----
@@ -171,7 +178,7 @@ The devfile command "OpenShift - Cleanup" (`.tasks/openshift_cleanup.sh`) resets
 workshop, and must remove everything a participant can create. In `.tasks/openshift_cleanup.sh`,
 after `+workshop_clean_project "${STAGING_PROJECT}"+`, add:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 
 # ACME: the Shipwright exercise in acme-<user>. Shipwright runs each build as a Tekton TaskRun,
@@ -183,7 +190,7 @@ oc delete buildruns.shipwright.io,taskruns.tekton.dev,builds.shipwright.io,deplo
 
 Also mention it in the comment at the top of the file:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 #   - deletes the participant's Argo CD Applications <svc>-<user> (without cascading),
 #   - deletes the ACME Hello build and deployment in acme-<user>.
@@ -191,7 +198,7 @@ Also mention it in the comment at the top of the file:
 
 == Step 6: Commit and push
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 bash -n .tasks/acme_build_shipwright.sh .tasks/solutions/acme-shipwright/deploy.sh .tasks/openshift_cleanup.sh
 git add labs/acme-hello .tasks devfile.yaml
@@ -248,7 +255,7 @@ In `user1`'s workspace, *Terminal → Run Task... → devfile*: the list of devf
   resources.
 * The solution works, also a second time:
 +
-[source,bash]
+[source,bash,role=copypaste]
 ----
 cd /projects/workshop/.tasks && . ./workshop-env.sh && ./solutions/acme-shipwright/deploy.sh
 ----
@@ -311,7 +318,7 @@ removed again by `cleanup.sh`.
 To take over improvements of the original workshop later, merge its `main` into your forks, one
 repository at a time, for example:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GITOPS_REPO}"
 git remote add upstream {GITOPS_REPO_URL}.git   # once

@@ -72,14 +72,14 @@ Open the URL in a private browser window: it must show the plain file without a 
 The commands of tutorial 1 use GitHub's URL formats. On your own server, use these instead. Set the
 address of your group or organisation once, without a trailing slash:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 export GIT_BASE=https://gitlab.example.com/acme
 ----
 
 *Step 2*, clone your copies:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 mkdir -p "$WORKDIR" && cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -96,7 +96,7 @@ server's format (see the table above).
 macOS::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -113,7 +113,7 @@ done
 Linux::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -146,7 +146,7 @@ The build scripts push to quay.io:
 
 To use another registry, change the `IMAGE=` line of the script in your fork, for example:
 
-[source,bash]
+[source,bash,role=copypaste]
 ----
 IMAGE="registry.example.com/acme/inner-outer-loop-lab:latest"
 ----

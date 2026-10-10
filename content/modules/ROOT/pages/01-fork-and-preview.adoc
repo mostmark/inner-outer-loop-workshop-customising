@@ -37,7 +37,7 @@ GitHub CLI::
 --
 With the https://cli.github.com/[GitHub CLI^], logged in with `gh auth login`:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
   gh repo fork {GITHUB_UPSTREAM}/$repo --clone=false --org "$GITHUB_USER"
@@ -50,7 +50,7 @@ For forks in your personal account, leave out `--org "$GITHUB_USER"`.
 
 == Step 2: Clone your forks
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 mkdir -p "$WORKDIR" && cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -84,7 +84,7 @@ which records the workshop's history:
 macOS::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -102,7 +102,7 @@ done
 Linux::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR"
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
@@ -130,7 +130,7 @@ repository).
 
 Only the tooling image and the link to these tutorials still refer to the original workshop:
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
   echo "== $repo"; git -C "$repo" grep -n {GITHUB_UPSTREAM} -- ':!docs'
@@ -144,7 +144,7 @@ code repository's `devfile.yaml`, and the link to these tutorials in the gitops 
 
 == Step 4: Commit and push
 
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 for repo in {GITOPS_REPO} {GUIDE_REPO} {CODE_REPO}; do
   git -C "$repo" commit -am "Point the fork to $GITHUB_USER" && git -C "$repo" push
@@ -160,7 +160,7 @@ Start a local preview of your lab guide:
 Podman::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GUIDE_REPO}"
 podman run --rm --name antora -v "$PWD:/antora" -p 8080:8080 -it ghcr.io/juliaaano/antora-viewer
@@ -174,7 +174,7 @@ On Linux with SELinux, add `:z` to the volume: `-v "$PWD:/antora:z"`.
 Node.js::
 +
 --
-[source,bash,subs="attributes+"]
+[source,bash,subs="attributes+",role=copypaste]
 ----
 cd "$WORKDIR/{GUIDE_REPO}"
 ./build-site.sh
@@ -190,7 +190,7 @@ server with kbd:[Ctrl+C].
 Participants open the lab guide with their own values in the URL. Open the preview with
 example values:
 
-[source,text]
+[source,text,role=copypaste]
 ----
 http://localhost:8080/?OPENSHIFT_USERNAME=user1&OPENSHIFT_PASSWORD=openshift&OPENSHIFT_CONSOLE_URL=console-openshift-console.apps.cluster.example.com&OPENSHIFT_API_URL=api.cluster.example.com:6443
 ----
