@@ -209,22 +209,13 @@ Run `./build-site.sh` again and reload the browser.
 
 Open the preview with the example URL from xref:01-fork-and-preview.adoc[tutorial 1].
 
-// SCREENSHOT-TODO: 02-01-header-before.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `02-01-header-before.png` +
-Before the branding: the top of the page "2. Get your Developer Workspace" in the local preview,
-with the theme's header bar (Red Hat Demo Platform logo, dark grey bar, "Inner & Outer Loop
-Workshop") and the navigation. Capture it after tutorial 1, before you change anything.
-====
+.Before: the theme's header bar
+[.screenshot]
+image::02-01-header-before.png[Before: the theme's header bar]
 
-// SCREENSHOT-TODO: 02-01-header-after.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `02-01-header-after.png` +
-After the branding: the same page and window size, with ACME's header bar (ACME logo, blue bar,
-"ACME Developer Workshop"), the orange links and the highlighted current page.
-====
+.After: ACME's header bar
+[.screenshot]
+image::02-01-header-after.png[After: ACME's header bar]
 
 === Check
 
@@ -234,12 +225,9 @@ After the branding: the same page and window size, with ACME's header bar (ACME 
 * The footer reads "ACME Developer Workshop · based on the Inner & Outer Loop Workshop".
 * The *Links* menu contains "ACME Intranet".
 
-// SCREENSHOT-TODO: 02-02-browser-tab.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `02-02-browser-tab.png` +
-The browser tab of the preview: ACME icon and the title ending in "ACME Developer Workshop".
-====
+.The lab guide with ACME's branding
+[.screenshot]
+image::02-02-acme-start-page.png[The lab guide with ACME's branding]
 
 == Step 6: Commit and push
 
