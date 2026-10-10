@@ -1,0 +1,110 @@
+diff --git a/cleanup.sh b/cleanup.sh
+index de5fbc5..b0d6f52 100755
+--- a/cleanup.sh
++++ b/cleanup.sh
+@@ -133,6 +133,10 @@ wait_gone "workshop namespaces" workshop_namespaces
+ # ---------------------------------------------------------------------------------------------
+ # 2. What Argo CD cannot prune: operators installed through OLM
+ # ---------------------------------------------------------------------------------------------
++# ACME: Builds for Red Hat OpenShift runs its builds on OpenShift Pipelines, so it goes first.
++# Deleting OpenShiftBuild removes Shipwright, its build strategies and its webhook.
++log "Removing OpenShiftBuild (Builds for Red Hat OpenShift)"
++oc delete openshiftbuilds.operator.openshift.io cluster --ignore-not-found --wait=true --timeout=300s 2>/dev/null
+ log "Removing TektonConfig (lets the Pipelines operator clean up openshift-pipelines)"
+ oc delete tektonconfig config --ignore-not-found --wait=true --timeout=300s
+ # The operator removes its TektonInstallerSets asynchronously; its CSV must stay until they are gone.
+@@ -163,10 +167,11 @@ delete_operator openshift-operators openshift-pipelines-operator-rh openshift-pi
+ delete_operator openshift-operators servicemeshoperator3 servicemeshoperator3
+ delete_operator kiali-operator kiali-ossm kiali-operator
+ delete_operator gitea-operator gitea-operator gitea-operator
++delete_operator openshift-builds openshift-builds-operator openshift-builds-operator
+ drain "Pipelines operator installer sets" tektoninstallersets.operator.tekton.dev openshift-pipelines-operator-rh
+ 
+ log "Removing operator namespaces kept during the Argo CD cleanup"
+-oc delete namespace kiali-operator gitea-operator --ignore-not-found --wait=false
++oc delete namespace kiali-operator gitea-operator openshift-builds --ignore-not-found --wait=false
+ 
+ log "Removing objects the operators created themselves"
+ oc delete namespace openshift-pipelines --ignore-not-found --wait=false
+@@ -203,7 +208,7 @@ oc delete validatingwebhookconfiguration config.webhook.operator.tekton.dev vali
+   namespace.operator.tekton.dev --ignore-not-found
+ for kind in clusterrole clusterrolebinding; do
+   oc get "$kind" --no-headers -o custom-columns=NAME:.metadata.name \
+-    | grep -E '^(devworkspace-controller-|devspaces-(edit|view)$|gitea-operator-|openshift-pipelines-|pipelines-scc-|tekton-|servicemesh-|sail-|kiali-)' \
++    | grep -E '^(devworkspace-controller-|devspaces-(edit|view)$|gitea-operator-|openshift-pipelines-|pipelines-scc-|tekton-|servicemesh-|sail-|kiali-|openshift-builds-)' \
+     | xargs -r oc delete "$kind" --ignore-not-found >/dev/null
+ done
+ # Java 21 builder tag added by the platform chart's cluster-integration Job.
+@@ -212,7 +217,7 @@ oc tag -d openshift/java:openjdk-21-ubi9 >/dev/null 2>&1 && log "Removed openshi
+ if [[ "$KEEP_CRDS" != "true" ]]; then
+   log "Removing the operators' CRDs"
+   oc get crd --no-headers -o custom-columns=NAME:.metadata.name \
+-    | grep -E '\.(devfile\.io|eclipse\.che|tekton\.dev|pipelinesascode\.tekton\.dev|istio\.io|sailoperator\.io|kiali\.io|pfe\.rhpds\.com)$' \
++    | grep -E '\.(devfile\.io|eclipse\.che|tekton\.dev|pipelinesascode\.tekton\.dev|istio\.io|sailoperator\.io|kiali\.io|pfe\.rhpds\.com|shipwright\.io|sharedresource\.openshift\.io)$|^openshiftbuilds\.operator\.openshift\.io$' \
+     | xargs -r oc delete crd --ignore-not-found --wait=false
+ fi
+ 
+@@ -245,7 +250,7 @@ else
+ fi
+ 
+ namespaces_left() {
+-  for ns in kiali-operator gitea-operator openshift-pipelines $([[ "$KEEP_GITOPS" == "true" ]] || echo "$GITOPS_NAMESPACE openshift-gitops-operator"); do
++  for ns in kiali-operator gitea-operator openshift-builds openshift-pipelines $([[ "$KEEP_GITOPS" == "true" ]] || echo "$GITOPS_NAMESPACE openshift-gitops-operator"); do
+     oc get namespace "$ns" --no-headers -o custom-columns=NAME:.metadata.name 2>/dev/null
+   done
+ }
+@@ -256,14 +261,14 @@ wait_gone "operator namespaces" namespaces_left
+ # ---------------------------------------------------------------------------------------------
+ leftovers() {
+   oc get namespaces --no-headers -o custom-columns=NAME:.metadata.name \
+-    | grep -E '^(my-project-|cn-project-|devspaces-|lab-guide$|workshop-setup$|openshift-devspaces$|istio-system$|istio-cni$|argocd$|gitea$|nexus$|kiali-operator$|gitea-operator$|openshift-pipelines$)' \
++    | grep -E '^(my-project-|cn-project-|devspaces-|lab-guide$|workshop-setup$|openshift-devspaces$|istio-system$|istio-cni$|argocd$|gitea$|nexus$|kiali-operator$|gitea-operator$|openshift-pipelines$|openshift-builds$|acme-)' \
+     | sed 's/^/namespace /'
+   oc get csv -A --no-headers -o custom-columns=NAME:.metadata.name 2>/dev/null | sort -u \
+-    | grep -E '^(devspacesoperator|devworkspace-operator|openshift-pipelines-operator-rh|servicemeshoperator3|kiali-operator|gitea-operator)' \
++    | grep -E '^(devspacesoperator|devworkspace-operator|openshift-pipelines-operator-rh|servicemeshoperator3|kiali-operator|gitea-operator|openshift-builds-operator)' \
+     | sed 's/^/csv /'
+   if [[ "$KEEP_CRDS" != "true" ]]; then
+     oc get crd --no-headers -o custom-columns=NAME:.metadata.name \
+-      | grep -E '\.(devfile\.io|eclipse\.che|tekton\.dev|istio\.io|sailoperator\.io|kiali\.io|pfe\.rhpds\.com)$' | sed 's/^/crd /'
++      | grep -E '\.(devfile\.io|eclipse\.che|tekton\.dev|istio\.io|sailoperator\.io|kiali\.io|pfe\.rhpds\.com|shipwright\.io|sharedresource\.openshift\.io)$|^openshiftbuilds\.operator\.openshift\.io$' | sed 's/^/crd /'
+   fi
+   oc get mutatingwebhookconfigurations,validatingwebhookconfigurations --no-headers -o custom-columns=NAME:.metadata.name \
+     | grep -E 'tekton|devfile|istio|checluster' | sed 's/^/webhook /'
+diff --git a/smoke-tests/isolation-check.sh b/smoke-tests/isolation-check.sh
+index a1dbf41..90c6b17 100755
+--- a/smoke-tests/isolation-check.sh
++++ b/smoke-tests/isolation-check.sh
+@@ -54,9 +54,9 @@ check "Log in as $B" login "$B"
+ 
+ section "OpenShift: $A vs namespaces of $B"
+ check "$A sees only their own projects" bash -c \
+-  "[ -z \"\$(KUBECONFIG=${WORK}/$A oc get projects -o name | grep -v -E 'project.openshift.io/(my-project|cn-project|devspaces)-$A\$')\" ]"
++  "[ -z \"\$(KUBECONFIG=${WORK}/$A oc get projects -o name | grep -v -E 'project.openshift.io/(my-project|cn-project|devspaces|acme)-$A\$')\" ]"
+ check "$A cannot list namespaces cluster-wide" denied as "$A" get namespaces
+-for ns in "my-project-$B" "cn-project-$B" "devspaces-$B"; do
++for ns in "my-project-$B" "cn-project-$B" "devspaces-$B" "acme-$B"; do
+   check "$A cannot list pods in $ns" denied as "$A" get pods -n "$ns"
+   check "$A cannot read secrets in $ns" denied as "$A" get secrets -n "$ns"
+   check "$A cannot create a ConfigMap in $ns" denied as "$A" create configmap isolation-probe -n "$ns" --from-literal=a=b
+diff --git a/smoke-tests/platform-check.sh b/smoke-tests/platform-check.sh
+index 439d99b..c868dbb 100755
+--- a/smoke-tests/platform-check.sh
++++ b/smoke-tests/platform-check.sh
+@@ -33,7 +33,7 @@ done
+ section "Operators"
+ for entry in openshift-gitops-operator/openshift-gitops-operator openshift-operators/devspaces \
+              openshift-operators/openshift-pipelines-operator-rh openshift-operators/servicemeshoperator3 \
+-             kiali-operator/kiali-ossm gitea-operator/gitea-operator; do
++             kiali-operator/kiali-ossm gitea-operator/gitea-operator openshift-builds/openshift-builds-operator; do
+   ns=${entry%%/*}; sub=${entry#*/}
+   csv=$(oc get subscriptions.operators.coreos.com "$sub" -n "$ns" -o jsonpath='{.status.installedCSV}' 2>/dev/null)
+   check "CSV of $sub ($csv) Succeeded" test "$(oc get csv "$csv" -n "$ns" -o jsonpath='{.status.phase}' 2>/dev/null)" = "Succeeded"
+@@ -108,6 +108,7 @@ for user in $USERS; do
+   done
+   check "$user: admin in my-project-$user" can_i_as "$user" create deployments "my-project-$user"
+   check "$user: edit in cn-project-$user" can_i_as "$user" create deployments "cn-project-$user"
++  check "$user: admin in acme-$user, can create Shipwright builds" can_i_as "$user" create builds.shipwright.io "acme-$user"
+   check "$user: cn-project in the mesh" test \
+     "$(oc get namespace "cn-project-$user" -o jsonpath='{.metadata.labels.istio-discovery}')" = "enabled"
+   check "$user: cn-project managed by participant Argo CD" test \

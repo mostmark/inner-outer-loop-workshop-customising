@@ -21,6 +21,7 @@ The workshop's repositories (all only `main`), which the tutorials describe and 
 | `content/modules/ROOT/partials/_attributes.adoc` | the workshop's repository URLs and images; every page includes it after its title |
 | `content/modules/ROOT/assets/images/` | diagrams (`*.svg`) and screenshots (`*.png`) |
 | `content/modules/ROOT/examples/acme/` | files the tutorials give readers (for example the new chapter); test exactly these files in a scratch fork |
+| `content/modules/ROOT/examples/acme/gitops/cleanup-and-smoke-tests.patch` | tutorial 5, steps 6 and 7 as a patch against the gitops repository's `cleanup.sh` and smoke tests; regenerate it (`git diff` on a fresh clone) whenever those scripts change upstream, and check it with `git apply --check` |
 | `content/supplemental-ui/` | theme additions; `supplemental_files` in `site.yml` is a directory, so every file there is active |
 | `SCREENSHOTS-TODO.md` | capture rules and the list of open screenshots |
 

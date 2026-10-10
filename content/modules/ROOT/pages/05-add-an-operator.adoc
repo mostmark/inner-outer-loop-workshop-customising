@@ -215,7 +215,22 @@ the `acme-<user>` projects. It can't remove what the operator itself created, no
 * three ClusterRoles and a ClusterRoleBinding (`openshift-builds-...`) that remain after the
   operator is removed.
 
-Make these changes in `cleanup.sh`:
+Steps 6 and 7 change three existing scripts in many small places. You can make the changes by hand
+(below), or apply all changes of both steps at once with a patch:
+
+[source,bash,role=copypaste]
+----
+curl -fsSL https://raw.githubusercontent.com/mostmark/inner-outer-loop-workshop-customising/main/content/modules/ROOT/examples/acme/gitops/cleanup-and-smoke-tests.patch \
+  | git apply
+git diff --stat cleanup.sh smoke-tests
+----
+
+`git diff --stat` lists `cleanup.sh`, `smoke-tests/isolation-check.sh` and
+`smoke-tests/platform-check.sh`. If `git apply` reports `patch does not apply`, your scripts differ
+from the original ones (changed by you, or already patched); make the changes by hand instead.
+Either way, read on: the rest of steps 6 and 7 explains what the changes do.
+
+*By hand*, make these changes in `cleanup.sh`:
 
 . Delete the instance first, before Pipelines, because Shipwright runs its builds on Pipelines.
   Before the line `+log "Removing TektonConfig ...+`, add:
@@ -252,6 +267,8 @@ too (for example `consoles.operator.openshift.io`).
   `|openshift-builds-operator` to the CSV list.
 
 == Step 7: Extend the smoke tests
+
+If you applied the patch in step 6, these changes are already made.
 
 * `smoke-tests/platform-check.sh`: add `openshift-builds/openshift-builds-operator` to the list of
   operators (`for entry in ...`), and after the check `edit in cn-project-$user`:
