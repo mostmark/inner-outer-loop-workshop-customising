@@ -21,9 +21,5 @@ with `image::<file name>[<short description>]`, and remove its line from the lis
 
 ## Open
 
-| File | Page | Shows |
-|---|---|---|
-| `06-01-workspace-explorer.png` | Tutorial 6 | `user1`'s workspace with `labs/acme-hello` open |
-| `06-02-run-task.png` | Tutorial 6 | Run Task list with "ACME - Build with Shipwright" |
-| `06-03-buildrun-succeeded.png` | Tutorial 6 | the BuildRun Succeeded in the console, as `user1` |
-| `06-04-acme-hello-app.png` | Tutorial 6 | the ACME Hello page in the browser |
+None: every screenshot is captured. When a new page needs one, add its placeholder here as
+`| File | Page | Shows |`.

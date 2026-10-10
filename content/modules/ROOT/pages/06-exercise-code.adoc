@@ -208,18 +208,29 @@ git push
 
 == Step 7: Bring it to the workspaces
 
+Your changes are in your code fork now, but the participants' workspaces don't have them yet:
+every workspace cloned the code repository when it was created, and read its devfile when it
+started. In this step you update a running workspace, `user1`'s, so that you can follow the new
+chapter in step 8.
+
+How a change in the code repository reaches a workspace:
+
 [cols="2,3"]
 |===
 | Workspaces | Get the change
 
 | created afterwards | automatically: they clone `main` of your code fork
 | already running (for example after tutorial 4) | the code with `git pull` in
-`/projects/workshop`; the new devfile command after a restart of the workspace (from the Dev
-Spaces dashboard: *Restart*)
+`/projects/workshop`; the new devfile command after a restart of the workspace
 |===
 
 For a test as `user1`, open `user1`'s workspace, run `git pull` in a terminal in
-`/projects/workshop`, and restart the workspace from the dashboard.
+`/projects/workshop`, and restart the workspace. Either:
+
+* in the editor: open the Command Palette (kbd:[F1]) and run *Dev Spaces: Restart Workspace*; or
+* in the Dev Spaces dashboard: *Workspaces*, then *Restart Workspace* in the workspace's menu.
+
+The editor reloads when the workspace is running again, after about a minute.
 
 == Step 8: Follow the chapter as a participant
 
@@ -227,21 +238,18 @@ Open `user1`'s lab guide URL (`./print-user-urls.sh` in your gitops fork), go to
 *9. Build a Container Image with Shipwright*, and follow it: first with the *CLI* tab, then, after
 *OpenShift - Cleanup*, with the *IDE Task* tab.
 
-// SCREENSHOT-TODO: 06-01-workspace-explorer.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `06-01-workspace-explorer.png` +
-`user1`'s Dev Spaces workspace: the explorer with `workshop/labs/acme-hello` open (`Dockerfile`,
-`index.html`), `Dockerfile` shown in the editor.
-====
+In `user1`'s workspace, the new code is in the explorer under `workshop/labs/acme-hello`:
 
-// SCREENSHOT-TODO: 06-02-run-task.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `06-02-run-task.png` +
-In `user1`'s workspace, *Terminal → Run Task... → devfile*: the list of devfile commands with
-"ACME - Build with Shipwright" highlighted.
-====
+.The ACME Hello code in `user1`'s workspace.
+[.screenshot]
+image::06-01-workspace-explorer.png[labs/acme-hello in the workspace explorer]
+
+The chapter's *IDE Task* tab uses *Terminal → Run Task... → devfile*. After the restart in step 7,
+the list contains your new command:
+
+.The devfile command "ACME - Build with Shipwright" in the list of tasks.
+[.screenshot]
+image::06-02-run-task.png[The new devfile command in Run Task]
 
 === Check
 
@@ -260,21 +268,19 @@ In `user1`'s workspace, *Terminal → Run Task... → devfile*: the list of devf
 cd /projects/workshop/.tasks && . ./workshop-env.sh && ./solutions/acme-shipwright/deploy.sh
 ----
 
-// SCREENSHOT-TODO: 06-03-buildrun-succeeded.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `06-03-buildrun-succeeded.png` +
-OpenShift console as `user1`, project `acme-user1`: the BuildRun `acme-hello-...` with status
-*Succeeded*. Check in the console where your version lists Shipwright builds (for example under
-*Builds*).
-====
+To see the BuildRun in the OpenShift console, log in as `user1`, select the project `acme-user1`,
+and go to *Builds → Shipwright*. Open the list *BuildRuns* and click the BuildRun: its *Logs* tab
+shows the build log.
 
-// SCREENSHOT-TODO: 06-04-acme-hello-app.png
-[NOTE.screenshot-todo,caption=Screenshot]
-====
-*Screenshot to add:* `06-04-acme-hello-app.png` +
-The ACME Hello page in the browser at `acme-hello-acme-user1.<apps domain>`.
-====
+.A BuildRun of `acme-hello` with the status *Succeeded*, in *Builds → Shipwright*.
+[.screenshot]
+image::06-03-buildrun-succeeded.png[The BuildRun in the OpenShift console]
+
+And the result, at `\http://acme-hello-acme-user1.<apps domain>`:
+
+.ACME Hello, built with Shipwright from your code fork.
+[.screenshot]
+image::06-04-acme-hello-app.png[The ACME Hello page]
 
 == What you changed
 
@@ -296,7 +302,13 @@ The ACME Hello page in the browser at `acme-hello-acme-user1.<apps domain>`.
 | Problem | Solution
 
 | *Run Task* doesn't list "ACME - Build with Shipwright" | The workspace started before the
-change: restart it from the Dev Spaces dashboard.
+change: restart it (step 7).
+| After the restart, the workspace fails with `Init Container project-clone has state
+ImagePullBackOff` (or another container) | The cluster couldn't download one of the workspace's
+images, usually because of a short network problem; `oc get events -n devspaces-<user>` shows the
+reason, for example `i/o timeout`. Check the cluster's internet access, then start the workspace
+again from the Dev Spaces dashboard (*Workspaces*, *Start*): a failed workspace doesn't retry by
+itself.
 | `labs/acme-hello` is missing in the workspace | Run `git pull` in `/projects/workshop`.
 | The BuildRun fails while fetching the source | The build clones your code fork from its URL
 (`CODE_REPO_URL`), so the fork must be readable without credentials, and the code pushed to
