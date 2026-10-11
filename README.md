@@ -19,7 +19,7 @@ repositories and turns it into its own version. You read this site; you don't ne
 | `content/modules/ROOT/partials/_attributes.adoc` | shared attributes (the workshop's repository URLs and images) |
 | `content/modules/ROOT/assets/images/` | diagrams (SVG) and screenshots |
 | `content/antora.yml` | component descriptor, product versions |
-| `content/supplemental-ui/` | additions to the theme: plain header and footer, `css/site-extra.css` |
+| `content/supplemental-ui/` | additions to the theme: `css/site-extra.css` |
 | `content/lib/tab-block.js` | tabs in pages |
 | `site.yml`, `build-site.sh` | Antora playbook and local build |
 | `.github/workflows/gh-pages.yml` | publishes every push to `main` on GitHub Pages |

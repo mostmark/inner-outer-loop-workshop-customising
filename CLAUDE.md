@@ -93,9 +93,10 @@ private Git repositories and registries.
 
 ## Branding
 
-The site uses the workshop's theme (`rhpds/rhdp_showroom_theme`) with a plain header and footer
-(`content/supplemental-ui/partials/`): the theme's Red Hat Demo Platform logo and link are
-replaced on purpose, because this site is not part of that platform.
+The site looks like the workshop's lab guide: the same theme (`rhpds/rhdp_showroom_theme`) with
+the theme's own header (Red Hat Demo Platform logo) and footer ("Powered by Red Hat Demo
+Platform"). Don't copy the lab guide repository's `header-content.hbs`: it is not active in the
+lab guide (gitops `docs/decisions.md`, D15) and shows an old event logo.
 
 ## Git
 
