@@ -70,7 +70,8 @@ Mesh {ossm_version}.
 === The storyline
 
 ACME wants to run the workshop for its developers with its own look and an extra chapter about
-building container images with Shipwright. Across the tutorials you:
+building container images with Builds for Red Hat OpenShift (Shipwright). Across the tutorials
+you:
 
 [cols="1,4,1,1"]
 |===
