@@ -129,7 +129,7 @@ export QUAY_USER=<your quay.io user or organisation>   # where your lab guide im
 export WORKDIR=~/acme-workshop                          # where your forks are cloned
 ----
 
-== Where to find more
+== Where to find more information
 
 * The workshop's installation and operation:
   {GITOPS_REPO_URL}#readme[README of the gitops repository^]
